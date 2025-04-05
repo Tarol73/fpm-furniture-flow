@@ -71,9 +71,12 @@ export default {
         fpm: {
           blue: '#0A2463',
           gray: '#EAEAEA',
-          orange: '#FF6B35',
+          purple: '#7E69AB', // Changed from orange to purple
           teal: '#3CBBB4'
         }
+      },
+      fontFamily: {
+        'roboto': ['Roboto', 'sans-serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',
