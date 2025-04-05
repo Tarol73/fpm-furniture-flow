@@ -1,8 +1,11 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const HeroSection = () => {
+  const isMobile = useIsMobile();
+  
   return (
     <section className="relative h-screen flex items-center">
       {/* Background image */}
@@ -10,7 +13,7 @@ const HeroSection = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
-          backgroundImage: `url('https://images.unsplash.com/photo-1721322800607-8c38375eef04?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')` 
+          backgroundImage: `url('https://images.unsplash.com/photo-1564069114553-7215e1ff1890?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')` 
         }}
       ></div>
       
@@ -24,23 +27,25 @@ const HeroSection = () => {
               className="h-16 md:h-24"
             />
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight animate-fade-in font-roboto">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal leading-tight animate-fade-in font-roboto">
             Профессиональное управление проектами мебельного оснащения коммерческих пространств
           </h1>
-          <p className="mt-6 text-xl md:text-2xl text-gray-200 animate-fade-in font-roboto" style={{ animationDelay: '200ms' }}>
+          <p className="mt-6 text-xl md:text-2xl text-gray-200 animate-fade-in font-roboto font-light" style={{ animationDelay: '200ms' }}>
             От согласования ТЗ до финальной приемки — ваш проект в надежных руках
           </p>
           <div className="mt-8 flex flex-wrap gap-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
             <Button size="lg" className="bg-fpm-purple hover:bg-fpm-purple/90 text-white font-medium">
               Обсудить проект
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="bg-transparent hover:bg-white/10 text-white border-white"
-            >
-              Узнать больше
-            </Button>
+            {!isMobile && (
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="bg-transparent hover:bg-white/10 text-white border-white"
+              >
+                Узнать больше
+              </Button>
+            )}
           </div>
         </div>
       </div>

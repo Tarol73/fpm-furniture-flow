@@ -43,8 +43,11 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         <Link to="/" className="flex items-center">
-          <span className="text-2xl font-bold text-fpm-blue">FPM</span>
-          <span className="hidden md:inline-block ml-2 text-sm text-gray-600">Furniture Project Management</span>
+          <img 
+            src="/lovable-uploads/c828dd8c-3f9c-4993-b8c4-56f44713a36a.png" 
+            alt="FPM Logo" 
+            className="h-8 md:h-10" 
+          />
         </Link>
 
         {/* Desktop Navigation */}
@@ -54,14 +57,14 @@ const Navbar = () => {
               key={link.path}
               to={link.path}
               className={cn(
-                'text-sm font-medium transition-colors hover:text-fpm-orange',
-                location.pathname === link.path ? 'text-fpm-orange' : 'text-gray-700'
+                'text-sm font-medium transition-colors hover:text-fpm-purple',
+                location.pathname === link.path ? 'text-fpm-purple' : 'text-gray-700'
               )}
             >
               {link.name}
             </Link>
           ))}
-          <Button className="bg-fpm-orange hover:bg-fpm-orange/90 text-white">
+          <Button className="bg-fpm-purple hover:bg-fpm-purple/90 text-white">
             Обсудить проект
           </Button>
         </nav>
@@ -85,13 +88,13 @@ const Navbar = () => {
                 to={link.path}
                 className={cn(
                   'py-2 text-base font-medium transition-colors',
-                  location.pathname === link.path ? 'text-fpm-orange' : 'text-gray-700'
+                  location.pathname === link.path ? 'text-fpm-purple' : 'text-gray-700'
                 )}
               >
                 {link.name}
               </Link>
             ))}
-            <Button className="w-full mt-4 bg-fpm-orange hover:bg-fpm-orange/90 text-white">
+            <Button className="w-full mt-4 bg-fpm-purple hover:bg-fpm-purple/90 text-white">
               Обсудить проект
             </Button>
           </div>
