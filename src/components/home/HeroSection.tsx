@@ -20,13 +20,6 @@ const HeroSection = () => {
       {/* Content */}
       <div className="container mx-auto px-4 relative z-20 text-white">
         <div className="flex flex-col max-w-3xl">
-          <div className="flex items-center mb-8">
-            <img 
-              src="/lovable-uploads/c828dd8c-3f9c-4993-b8c4-56f44713a36a.png" 
-              alt="FPM Logo" 
-              className="h-16 md:h-24"
-            />
-          </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal leading-tight animate-fade-in font-roboto">
             Профессиональное управление проектами мебельного оснащения коммерческих пространств
           </h1>

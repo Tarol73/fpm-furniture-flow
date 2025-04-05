@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Building, Users, Briefcase } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const audiences = [
   {
@@ -33,6 +34,7 @@ const audiences = [
 
 const ForWhomSection = () => {
   const [activeTab, setActiveTab] = useState('contractors');
+  const isMobile = useIsMobile();
 
   return (
     <section className="section-padding">
@@ -44,23 +46,25 @@ const ForWhomSection = () => {
           </p>
         </div>
         
-        {/* Tabs */}
-        <div className="flex flex-wrap justify-center mb-8 gap-4">
-          {audiences.map((audience) => (
-            <button
-              key={audience.id}
-              className={cn(
-                'px-6 py-3 rounded-full text-sm font-medium transition-colors',
-                activeTab === audience.id 
-                  ? 'bg-fpm-blue text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              )}
-              onClick={() => setActiveTab(audience.id)}
-            >
-              {audience.title}
-            </button>
-          ))}
-        </div>
+        {/* Tabs - hidden on mobile */}
+        {!isMobile && (
+          <div className="flex flex-wrap justify-center mb-8 gap-4">
+            {audiences.map((audience) => (
+              <button
+                key={audience.id}
+                className={cn(
+                  'px-6 py-3 rounded-full text-sm font-medium transition-colors',
+                  activeTab === audience.id 
+                    ? 'bg-fpm-blue text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                )}
+                onClick={() => setActiveTab(audience.id)}
+              >
+                {audience.title}
+              </button>
+            ))}
+          </div>
+        )}
         
         {/* Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
@@ -69,7 +73,7 @@ const ForWhomSection = () => {
               key={audience.id}
               className={cn(
                 'bg-white rounded-lg shadow-lg p-8 text-center transition-all duration-300',
-                activeTab === audience.id 
+                activeTab === audience.id && !isMobile
                   ? 'ring-2 ring-fpm-teal scale-105 z-10' 
                   : 'opacity-70 hover:opacity-100 hover-lift'
               )}
@@ -87,7 +91,7 @@ const ForWhomSection = () => {
               <Button 
                 className={cn(
                   'bg-fpm-teal hover:bg-fpm-teal/90 text-white',
-                  activeTab !== audience.id && 'bg-gray-300 hover:bg-gray-400'
+                  activeTab !== audience.id && !isMobile && 'bg-gray-300 hover:bg-gray-400'
                 )}
               >
                 {audience.cta}
