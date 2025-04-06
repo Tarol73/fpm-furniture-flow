@@ -22,14 +22,14 @@ const HeroSection = () => {
         <div className="flex flex-col max-w-3xl">
           {/* Logo text */}
           <div className="flex items-start mb-8">
-            <div className="flex">
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-normal tracking-tight text-white mr-4">
+            <div className="flex items-start">
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-light tracking-tight text-white mr-4">
                 FPM
               </h1>
-              <div className="flex flex-col justify-between">
-                <span className="text-sm md:text-lg lg:text-xl font-light tracking-wide">FURNITURE</span>
-                <span className="text-sm md:text-lg lg:text-xl font-light tracking-wide">PROJECT</span>
-                <span className="text-sm md:text-lg lg:text-xl font-light tracking-wide">MANAGEMENT</span>
+              <div className="flex flex-col justify-between text-right leading-none">
+                <span className="text-sm md:text-base lg:text-lg font-extralight tracking-wide">FURNITURE</span>
+                <span className="text-sm md:text-base lg:text-lg font-extralight tracking-wide">PROJECT</span>
+                <span className="text-sm md:text-base lg:text-lg font-extralight tracking-wide">MANAGEMENT</span>
               </div>
             </div>
           </div>
