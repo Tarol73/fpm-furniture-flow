@@ -34,7 +34,7 @@ const projectsData = [
     location: 'Сочи',
     year: '2023',
     description: 'Комплексное оснащение номерного фонда и общественных зон пятизвездочного отеля. Поставка и монтаж мебели, декоративных панелей и элементов интерьера.',
-    image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
+    image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
     tags: ['Отель', 'Люкс', 'Комплексное оснащение']
   },
   {
@@ -64,7 +64,7 @@ const projectsData = [
     location: 'Новосибирск',
     year: '2022',
     description: 'Комплексное оснащение клиники с учетом специфических требований медицинских учреждений. Мебель, соответствующая санитарным нормам и требованиям безопасности.',
-    image: 'https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
+    image: 'https://images.unsplash.com/photo-1504439468489-c8920d796a29?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
     tags: ['Медицина', 'Специализированная мебель', 'Безопасность']
   }
 ];

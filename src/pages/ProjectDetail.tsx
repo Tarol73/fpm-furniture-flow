@@ -14,7 +14,7 @@ import {
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Sample detailed project data
 const projectsDetailData = [
@@ -34,7 +34,7 @@ const projectsDetailData = [
       'https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
       'https://images.unsplash.com/photo-1604328698692-f76ea9498e76?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
       'https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-      'https://images.unsplash.com/photo-1604480132736-44c188fe3981?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
+      'https://images.unsplash.com/photo-1568992687947-868a62a9f521?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
       'https://images.unsplash.com/photo-1577412647305-991150c7d163?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
       'https://images.unsplash.com/photo-1524758631624-e2822e304c36?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
     ],
@@ -48,7 +48,7 @@ const projectsDetailData = [
 
 const ProjectDetail = () => {
   const { id } = useParams();
-  const [selectedImage, setSelectedImage] = useState("");
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   
   // Find project by ID (in a real app, you would fetch this from a database)
   const project = projectsDetailData.find(p => p.id === Number(id)) || projectsDetailData[0];
@@ -56,6 +56,26 @@ const ProjectDetail = () => {
   if (!project) {
     return <div>Проект не найден</div>;
   }
+
+  const handleImageClick = (index: number) => {
+    setSelectedImageIndex(index);
+  };
+
+  const handleNextImage = () => {
+    if (selectedImageIndex !== null) {
+      setSelectedImageIndex((selectedImageIndex + 1) % project.gallery.length);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (selectedImageIndex !== null) {
+      setSelectedImageIndex((selectedImageIndex - 1 + project.gallery.length) % project.gallery.length);
+    }
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedImageIndex(null);
+  };
 
   return (
     <div className="min-h-screen">
@@ -89,7 +109,7 @@ const ProjectDetail = () => {
           <div className="relative mb-12 rounded-lg overflow-hidden shadow-md">
             <Dialog>
               <DialogTrigger asChild>
-                <div className="cursor-zoom-in relative">
+                <div className="cursor-zoom-in relative" onClick={() => handleImageClick(0)}>
                   <img 
                     src={project.mainImage} 
                     alt={project.title} 
@@ -102,12 +122,26 @@ const ProjectDetail = () => {
                   </div>
                 </div>
               </DialogTrigger>
-              <DialogContent className="max-w-5xl w-full p-2 bg-transparent border-none">
+              <DialogContent className="max-w-5xl w-full p-2 bg-black/90 border-none relative">
                 <img 
-                  src={project.mainImage} 
+                  src={selectedImageIndex !== null ? project.gallery[selectedImageIndex] : project.mainImage} 
                   alt={project.title} 
                   className="w-full h-auto object-contain max-h-[90vh]"
                 />
+                <button 
+                  onClick={handlePrevImage}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                  aria-label="Предыдущее изображение"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+                <button 
+                  onClick={handleNextImage}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                  aria-label="Следующее изображение"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
               </DialogContent>
             </Dialog>
           </div>
@@ -121,7 +155,7 @@ const ProjectDetail = () => {
                   <CarouselItem key={index} className="basis-1/1 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                     <Dialog>
                       <DialogTrigger asChild>
-                        <div className="cursor-zoom-in p-1 relative group">
+                        <div className="cursor-zoom-in p-1 relative group" onClick={() => handleImageClick(index)}>
                           <div className="overflow-hidden rounded-lg">
                             <img 
                               src={image} 
@@ -131,12 +165,26 @@ const ProjectDetail = () => {
                           </div>
                         </div>
                       </DialogTrigger>
-                      <DialogContent className="max-w-5xl w-full p-2 bg-transparent border-none">
+                      <DialogContent className="max-w-5xl w-full p-2 bg-black/90 border-none relative">
                         <img 
-                          src={image} 
+                          src={selectedImageIndex !== null ? project.gallery[selectedImageIndex] : image} 
                           alt={`${project.title} - изображение ${index + 1}`} 
                           className="w-full h-auto object-contain max-h-[90vh]"
                         />
+                        <button 
+                          onClick={handlePrevImage}
+                          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                          aria-label="Предыдущее изображение"
+                        >
+                          <ChevronLeft className="h-6 w-6" />
+                        </button>
+                        <button 
+                          onClick={handleNextImage}
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+                          aria-label="Следующее изображение"
+                        >
+                          <ChevronRight className="h-6 w-6" />
+                        </button>
                       </DialogContent>
                     </Dialog>
                   </CarouselItem>
