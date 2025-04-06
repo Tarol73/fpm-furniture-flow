@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -195,12 +196,5 @@ const Contact = () => {
     </div>
   );
 };
-
-// Add TypeScript interface for Yandex Maps
-declare global {
-  interface Window {
-    ymaps: any;
-  }
-}
 
 export default Contact;
