@@ -13,7 +13,7 @@ const audiences = [
     title: 'Генеральные подрядчики',
     description: 'Избавим от простоев и переделок. Наша экспертиза в управлении мебельными проектами позволит вам сократить время реализации и избежать частых проблем.',
     cta: 'Узнать больше',
-    anchor: 'contractors'
+    path: '/services'
   },
   {
     id: 'designers',
@@ -21,7 +21,7 @@ const audiences = [
     title: 'Архитекторы и дизайнеры',
     description: 'Воплотим ваши идеи в жизнь. Мы обеспечим техническую поддержку ваших дизайн-концепций и проследим за точным соответствием готовой мебели проекту.',
     cta: 'Подробнее',
-    anchor: 'designers'
+    path: '/services'
   },
   {
     id: 'manufacturers',
@@ -29,7 +29,7 @@ const audiences = [
     title: 'Производители мебели',
     description: 'Откроем доступ к крупным проектам. Станьте частью нашей сети проверенных производителей и получайте регулярные заказы от ведущих компаний.',
     cta: 'Стать партнером',
-    anchor: 'manufacturers'
+    path: '/partners'
   }
 ];
 
@@ -38,8 +38,8 @@ const ForWhomSection = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
 
-  const handleButtonClick = (anchor: string) => {
-    navigate(`/partners#${anchor}`);
+  const handleButtonClick = (path: string) => {
+    navigate(path);
   };
 
   return (
@@ -101,7 +101,7 @@ const ForWhomSection = () => {
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleButtonClick(audience.anchor);
+                  handleButtonClick(audience.path);
                 }}
               >
                 {audience.cta}

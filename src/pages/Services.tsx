@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { Search, Users, FileText, BarChart4, Truck, Factory } from 'lucide-react';
+import { Search, Users, FileText, BarChart4, Truck, Factory, Check } from 'lucide-react';
 import ContactDialog from '@/components/contact/ContactDialog';
 
 const Services = () => {
@@ -57,10 +57,94 @@ const Services = () => {
       <section className="pt-28 pb-16 md:pt-40 md:pb-20 bg-fpm-blue text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-light mb-6 animate-on-scroll">Услуги</h1>
+            <h1 className="text-4xl md:text-5xl font-light mb-6 animate-on-scroll">Для наших будущих Заказчиков</h1>
             <p className="text-xl md:text-2xl font-light leading-relaxed animate-on-scroll">
               Профессиональные решения для оснащения коммерческих пространств
             </p>
+          </div>
+        </div>
+      </section>
+      
+      {/* Benefits for clients section - moved from Partners page */}
+      <section className="py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-light mb-8 animate-on-scroll">Преимущества сотрудничества с FPM</h2>
+            <p className="text-lg text-gray-700 leading-relaxed animate-on-scroll">
+              Мы создаем эффективные процессы взаимодействия между заказчиками, архитекторами, 
+              дизайнерами и производителями мебели. Работая с нами, вы получаете надежного партнера, 
+              который гарантирует результат.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+            {/* Left column - Benefits for contractors */}
+            <div className="bg-gray-50 p-8 rounded-lg animate-on-scroll">
+              <h3 className="text-2xl font-light text-fpm-blue mb-6">Для генеральных подрядчиков</h3>
+              <ul className="space-y-4">
+                <li className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
+                    <Check className="w-4 h-4 text-fpm-teal" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-fpm-blue">Снижение операционной нагрузки</h4>
+                    <p className="text-gray-700">Мы берем на себя полное управление процессом мебельного оснащения — от поиска фабрик до приемки, что сокращает простои и риски срыва сроков.</p>
+                  </div>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
+                    <Check className="w-4 h-4 text-fpm-teal" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-fpm-blue">Финансовая прозрачность</h4>
+                    <p className="text-gray-700">Исключаем переплаты за счет тщательного аудита производств и жесткого контроля бюджета на всех этапах проекта.</p>
+                  </div>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
+                    <Check className="w-4 h-4 text-fpm-teal" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-fpm-blue">Гарантия качества</h4>
+                    <p className="text-gray-700">Контролируем качество на всех этапах производства и монтажа, минимизируя риски брака и последующих претензий.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Right column - Benefits for designers */}
+            <div className="bg-gray-50 p-8 rounded-lg animate-on-scroll">
+              <h3 className="text-2xl font-light text-fpm-blue mb-6">Для архитекторов и дизайнеров</h3>
+              <ul className="space-y-4">
+                <li className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
+                    <Check className="w-4 h-4 text-fpm-teal" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-fpm-blue">Реализация амбициозных идей</h4>
+                    <p className="text-gray-700">Подбираем фабрики, способные воплотить сложные дизайн-решения, включая нестандартную мебель и авторские панели.</p>
+                  </div>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
+                    <Check className="w-4 h-4 text-fpm-teal" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-fpm-blue">Техническая поддержка</h4>
+                    <p className="text-gray-700">Помогаем адаптировать креативные идеи к производственным возможностям и техническим нормам, сохраняя эстетику и функциональность.</p>
+                  </div>
+                </li>
+                <li className="flex items-start">
+                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
+                    <Check className="w-4 h-4 text-fpm-teal" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-fpm-blue">Защита дизайн-концепции</h4>
+                    <p className="text-gray-700">Контролируем сохранение изначальной идеи дизайнера при адаптации к производственным требованиям.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
