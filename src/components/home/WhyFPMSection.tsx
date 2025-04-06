@@ -4,22 +4,22 @@ import { Check, Star, Clock, ShieldCheck } from 'lucide-react';
 
 const features = [
   {
-    icon: <Check className="w-12 h-12 text-fpm-orange" />,
+    icon: <Check className="w-12 h-12 text-fpm-purple" />,
     title: 'База проверенных производителей',
     description: 'Сотрудничаем с более чем 50 надежными фабриками, что гарантирует качество и своевременное выполнение заказов.'
   },
   {
-    icon: <ShieldCheck className="w-12 h-12 text-fpm-orange" />,
+    icon: <ShieldCheck className="w-12 h-12 text-fpm-purple" />,
     title: 'Снижение рисков на 30%',
     description: 'Наш опыт и методология позволяют значительно сократить риски срыва сроков и превышения бюджета.'
   },
   {
-    icon: <Clock className="w-12 h-12 text-fpm-orange" />,
+    icon: <Clock className="w-12 h-12 text-fpm-purple" />,
     title: 'Контроль сроков и бюджета',
     description: 'Внедряем эффективную систему контроля на всех этапах проекта, исключая непредвиденные расходы.'
   },
   {
-    icon: <Star className="w-12 h-12 text-fpm-orange" />,
+    icon: <Star className="w-12 h-12 text-fpm-purple" />,
     title: 'Гарантия качества на всех этапах',
     description: 'Строгий контроль качества от выбора материалов до финальной сборки и приемки мебели на объекте.'
   }
