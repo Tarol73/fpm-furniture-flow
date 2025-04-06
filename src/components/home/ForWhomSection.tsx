@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Building, Users, Briefcase } from 'lucide-react';
+import { Building, Users, Factory } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -24,7 +24,7 @@ const audiences = [
   },
   {
     id: 'manufacturers',
-    icon: <Briefcase className="w-16 h-16 mb-4 text-fpm-blue" />,
+    icon: <Factory className="w-16 h-16 mb-4 text-fpm-blue" />,
     title: 'Производители мебели',
     description: 'Откроем доступ к крупным проектам. Станьте частью нашей сети проверенных производителей и получайте регулярные заказы от ведущих компаний.',
     cta: 'Стать партнером',
@@ -40,8 +40,8 @@ const ForWhomSection = () => {
     <section className="section-padding">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-fpm-blue">Для кого мы работаем</h2>
-          <p className="mt-4 text-lg text-gray-600">
+          <h2 className="text-3xl md:text-4xl font-normal text-fpm-blue">Для кого мы работаем</h2>
+          <p className="mt-4 text-lg text-gray-600 font-light">
             Наши услуги созданы для решения специфических задач разных участников мебельных проектов
           </p>
         </div>
@@ -55,7 +55,7 @@ const ForWhomSection = () => {
                 className={cn(
                   'px-6 py-3 rounded-full text-sm font-medium transition-colors',
                   activeTab === audience.id 
-                    ? 'bg-fpm-blue text-white' 
+                    ? 'bg-fpm-teal text-white' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 )}
                 onClick={() => setActiveTab(audience.id)}
@@ -82,10 +82,10 @@ const ForWhomSection = () => {
               <div className="flex justify-center">
                 {audience.icon}
               </div>
-              <h3 className="text-2xl font-bold text-fpm-blue mb-4">
+              <h3 className="text-2xl font-normal text-fpm-blue mb-4">
                 {audience.title}
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-6 font-light">
                 {audience.description}
               </p>
               <Button 

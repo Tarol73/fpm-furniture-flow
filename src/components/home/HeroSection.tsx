@@ -20,14 +20,28 @@ const HeroSection = () => {
       {/* Content */}
       <div className="container mx-auto px-4 relative z-20 text-white">
         <div className="flex flex-col max-w-3xl">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-normal leading-tight animate-fade-in font-roboto">
+          {/* Logo text */}
+          <div className="flex items-start mb-8">
+            <div className="flex">
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-normal tracking-tight text-fpm-teal mr-4">
+                FPM
+              </h1>
+              <div className="flex flex-col justify-between">
+                <span className="text-xl md:text-2xl lg:text-3xl font-light tracking-wide">FURNITURE</span>
+                <span className="text-xl md:text-2xl lg:text-3xl font-light tracking-wide">PROJECT</span>
+                <span className="text-xl md:text-2xl lg:text-3xl font-light tracking-wide">MANAGEMENT</span>
+              </div>
+            </div>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight animate-fade-in font-roboto">
             Профессиональное управление проектами мебельного оснащения коммерческих пространств
           </h1>
           <p className="mt-6 text-xl md:text-2xl text-gray-200 animate-fade-in font-roboto font-light" style={{ animationDelay: '200ms' }}>
             От согласования ТЗ до финальной приемки — ваш проект в надежных руках
           </p>
           <div className="mt-8 flex flex-wrap gap-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
-            <Button size="lg" className="bg-fpm-purple hover:bg-fpm-purple/90 text-white font-medium">
+            <Button size="lg" className="bg-fpm-teal hover:bg-fpm-teal/90 text-white font-medium">
               Обсудить проект
             </Button>
             {!isMobile && (
