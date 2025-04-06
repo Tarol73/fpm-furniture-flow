@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -57,7 +56,7 @@ const Partners = () => {
       <section className="pt-28 pb-16 md:pt-40 md:pb-20 bg-fpm-blue text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-light mb-6 animate-on-scroll">Для подрядчиков</h1>
+            <h1 className="text-4xl md:text-5xl font-light mb-6 animate-on-scroll">Для партнеров и заказчиков</h1>
             <p className="text-xl md:text-2xl font-light leading-relaxed animate-on-scroll">
               Совместная работа для создания совершенных коммерческих пространств
             </p>

@@ -4,6 +4,7 @@ import { Building, Users, Factory } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useNavigate } from 'react-router-dom';
 
 const audiences = [
   {
@@ -12,7 +13,7 @@ const audiences = [
     title: 'Генеральные подрядчики',
     description: 'Избавим от простоев и переделок. Наша экспертиза в управлении мебельными проектами позволит вам сократить время реализации и избежать частых проблем.',
     cta: 'Узнать больше',
-    link: '/partners#contractors'
+    anchor: 'contractors'
   },
   {
     id: 'designers',
@@ -20,7 +21,7 @@ const audiences = [
     title: 'Архитекторы и дизайнеры',
     description: 'Воплотим ваши идеи в жизнь. Мы обеспечим техническую поддержку ваших дизайн-концепций и проследим за точным соответствием готовой мебели проекту.',
     cta: 'Подробнее',
-    link: '/partners#designers'
+    anchor: 'designers'
   },
   {
     id: 'manufacturers',
@@ -28,13 +29,18 @@ const audiences = [
     title: 'Производители мебели',
     description: 'Откроем доступ к крупным проектам. Станьте частью нашей сети проверенных производителей и получайте регулярные заказы от ведущих компаний.',
     cta: 'Стать партнером',
-    link: '/partners#manufacturers'
+    anchor: 'manufacturers'
   }
 ];
 
 const ForWhomSection = () => {
   const [activeTab, setActiveTab] = useState('contractors');
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+
+  const handleButtonClick = (anchor: string) => {
+    navigate(`/partners#${anchor}`);
+  };
 
   return (
     <section className="section-padding">
@@ -93,6 +99,10 @@ const ForWhomSection = () => {
                   'bg-fpm-teal hover:bg-fpm-teal/90 text-white font-light',
                   activeTab !== audience.id && !isMobile && 'bg-gray-300 hover:bg-gray-400'
                 )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleButtonClick(audience.anchor);
+                }}
               >
                 {audience.cta}
               </Button>

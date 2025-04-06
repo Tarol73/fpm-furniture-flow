@@ -19,14 +19,26 @@ const Footer = () => {
     }, 100);
   };
 
+  // Function to navigate to home and scroll to top
+  const handleHomeClick = () => {
+    navigate('/');
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <footer className="bg-fpm-blue text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
-            <Link to="/" className="flex items-center">
+            <button 
+              onClick={handleHomeClick}
+              className="flex items-center text-white hover:text-gray-200 transition-colors"
+            >
               <h3 className="text-2xl font-light">FPM</h3>
-            </Link>
+            </button>
             <p className="mt-4 text-sm text-gray-300 font-light">
               Профессиональное управление проектами мебельного оснащения коммерческих пространств
             </p>

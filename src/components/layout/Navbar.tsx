@@ -57,7 +57,7 @@ const Navbar = () => {
               key={link.path}
               to={link.path}
               className={cn(
-                'text-lg font-medium transition-colors hover:text-fpm-teal',
+                'text-lg font-light transition-colors hover:text-fpm-teal',
                 location.pathname === link.path ? 'text-fpm-teal' : 'text-gray-700'
               )}
             >
@@ -84,14 +84,14 @@ const Navbar = () => {
                 key={link.path}
                 to={link.path}
                 className={cn(
-                  'py-2 text-base font-medium transition-colors',
+                  'py-2 text-base font-light transition-colors',
                   location.pathname === link.path ? 'text-fpm-teal' : 'text-gray-700'
                 )}
               >
                 {link.name}
               </Link>
             ))}
-            <Button className="w-full mt-4 bg-fpm-teal hover:bg-fpm-teal/90 text-white">
+            <Button className="w-full mt-4 bg-fpm-teal hover:bg-fpm-teal/90 text-white font-light">
               Обсудить проект
             </Button>
           </div>
