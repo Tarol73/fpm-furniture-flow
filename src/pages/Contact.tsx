@@ -29,7 +29,7 @@ const Contact = () => {
 
     // Initialize Yandex Maps
     const script = document.createElement('script');
-    script.src = 'https://api-maps.yandex.ru/2.1/?apikey=ваш_API_ключ&lang=ru_RU';
+    script.src = 'https://api-maps.yandex.ru/2.1/?apikey=71d991f7-17b1-406f-af41-c8737fcbb62a&lang=ru_RU';
     script.async = true;
     script.onload = initMap;
     document.body.appendChild(script);
