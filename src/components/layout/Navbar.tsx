@@ -46,7 +46,7 @@ const Navbar = () => {
           <img 
             src="/lovable-uploads/c828dd8c-3f9c-4993-b8c4-56f44713a36a.png" 
             alt="FPM Logo" 
-            className="h-10 md:h-12" 
+            className="h-12 md:h-14" 
           />
         </Link>
 
@@ -57,7 +57,7 @@ const Navbar = () => {
               key={link.path}
               to={link.path}
               className={cn(
-                'text-base font-medium transition-colors hover:text-fpm-teal',
+                'text-lg font-medium transition-colors hover:text-fpm-teal',
                 location.pathname === link.path ? 'text-fpm-teal' : 'text-gray-700'
               )}
             >

@@ -23,13 +23,13 @@ const HeroSection = () => {
           {/* Logo text */}
           <div className="flex items-start mb-8">
             <div className="flex">
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-normal tracking-tight text-fpm-teal mr-4">
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-normal tracking-tight text-white mr-4">
                 FPM
               </h1>
               <div className="flex flex-col justify-between">
-                <span className="text-xl md:text-2xl lg:text-3xl font-light tracking-wide">FURNITURE</span>
-                <span className="text-xl md:text-2xl lg:text-3xl font-light tracking-wide">PROJECT</span>
-                <span className="text-xl md:text-2xl lg:text-3xl font-light tracking-wide">MANAGEMENT</span>
+                <span className="text-sm md:text-lg lg:text-xl font-light tracking-wide">FURNITURE</span>
+                <span className="text-sm md:text-lg lg:text-xl font-light tracking-wide">PROJECT</span>
+                <span className="text-sm md:text-lg lg:text-xl font-light tracking-wide">MANAGEMENT</span>
               </div>
             </div>
           </div>
