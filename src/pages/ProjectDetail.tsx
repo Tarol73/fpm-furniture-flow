@@ -21,8 +21,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import ContactDialog from '@/components/contact/ContactDialog';
+import ProjectGalleryImage from '@/components/project/ProjectGalleryImage';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-// Sample detailed project data
 const projectsDetailData = [
   {
     id: 1,
@@ -31,7 +32,7 @@ const projectsDetailData = [
     location: 'Москва',
     year: '2023',
     description: 'Комплексное оснащение офисного пространства площадью 3500 м² с индивидуальными рабочими местами и зонами для коллективной работы. В рамках проекта была разработана концепция офисного пространства, отвечающая корпоративным ценностям компании и современным требованиям к эргономике рабочего места.',
-    fullDescription: 'Бизнес-центр "Горизонт" – это современный деловой комплекс класса А, расположенный в центральном деловом районе Москвы. Проект включал в себя полное оснащение шести этажей офисного здания, включая рецепцию, рабочие зоны открытого и закрытого типа, переговорные комнаты, зоны отдыха и коллективной работы.\n\nНаша команда провела детальный анализ потребностей заказчика, который хотел создать пространство, способствующее как эффективной индивидуальной работе, так и командному взаимодействию. Основываясь на этом анализе, мы разработали концепцию, совмещающую функциональность, эргономику и эстетику.\n\nОсобое внимание было уделено качеству и долговечности мебели. Для проекта были подобраны производители, специализирующиеся на офисной мебели высокого класса. Все рабочие места оснащены эргономичными креслами и столами с электрической регулировкой высоты, что позволяет сотрудникам чередовать работу сидя и стоя.\n\nВ переговорных комнатах установлены модульные столы, которые можно трансформировать под различные форматы встреч. Зоны отдыха оборудованы комфортной мягкой мебелью и акустическими панелями для снижения уровня шума.\n\nПроект был реализован в установленные сроки, несмотря на сложную логистику поставок от различных производителей. Наша команда обеспечила контроль качества на всех этапах, от производства до сборки и установки мебели.',
+    fullDescription: 'Бизнес-центр "Горизонт" – это современный деловой комплекс класса А, расположенный в центральном деловом районе Москвы. Проект включал в себя полное оснащение шести этажей офисного здания, включая рецепцию, рабочие зоны открытого и закрытого типа, переговорные комнаты, зоны отдыха и коллективной работы.\n\nНаша команда провела детальный анализ потребностей заказчика, который хотел создать пространство, способствующее как эффективной индивидуальной работе, так и командному взаимодействию. Основываясь на этом анализе, мы разработали концепцию, совмещающую функциональность, эргономику и эстетику.\n\nОсобое внимание было уделено качеству и долговечности мебели. Для проекта были подобраны производители, специализирующиеся на офисной мебели высокого класса. Все рабочие места оснащены эргономичными креслами и столами с электрической регулировкой высоты, что позволяет сотрудникам чередовать работу сидя и стоя.\n\nВ переговорных комнатах установлены модульные столы, которые можно трансформировать под различные форматы встреч. Зоны отдыха оборудованы комфортной мягкой мебелью и акустическими панелями для снижения уровня шума.\n\nПроект был реализован в установленные сроки, несмотря на сложную логистику поставок от различных производителей. Наша к��манда обеспечила контроль качества на всех этапах, от производства до сборки и установки мебели.',
     challenge: 'Основной сложностью проекта был сжатый график реализации – всего 3 месяца от проектирования до полной готовности пространства к эксплуатации. Кроме того, требовалось интегрировать существующие инженерные системы здания с новым офисным оснащением.',
     solution: 'Мы разработали детальный план реализации с еженедельным контролем всех этапов. Для ускорения процесса были выбраны производители с готовыми складскими программами, что позволило сократить время на производство. Параллельно с поставками осуществлялся монтаж, благодаря чему удалось завершить проект в срок.',
     results: 'Созданное офисное пространство полностью соответствует ожиданиям заказчика и получило высокую оценку сотрудников компании. Эргономичные рабочие места способствуют повышению производительности, а современный дизайн отражает инновационный характер бизнеса клиента.',
@@ -55,15 +56,15 @@ const projectsDetailData = [
 const ProjectDetail = () => {
   const { id } = useParams();
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const isMobile = useIsMobile();
   
-  // Find project by ID (in a real app, you would fetch this from a database)
   const project = projectsDetailData.find(p => p.id === Number(id)) || projectsDetailData[0];
   
   if (!project) {
     return <div>Проект не найден</div>;
   }
 
-  const handleImageClick = (index: number) => {
+  const handleImageClick = (index: number | null) => {
     setSelectedImageIndex(index);
   };
 
@@ -119,7 +120,6 @@ const ProjectDetail = () => {
             </div>
           </div>
           
-          {/* Main project image */}
           <div className="relative mb-12 rounded-lg overflow-hidden shadow-md">
             <Dialog onOpenChange={(open) => !open && handleCloseDialog()}>
               <DialogTrigger asChild>
@@ -127,7 +127,7 @@ const ProjectDetail = () => {
                   <img 
                     src={project.mainImage} 
                     alt={project.title} 
-                    className="w-full h-[60vh] object-cover"
+                    className={`w-full ${isMobile ? 'h-auto object-contain' : 'h-[60vh] object-cover'}`}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
                     <span className="text-white opacity-0 hover:opacity-100 text-lg font-medium">
@@ -165,55 +165,21 @@ const ProjectDetail = () => {
             </Dialog>
           </div>
           
-          {/* Project gallery */}
           <div className="mb-16">
             <h2 className="text-2xl font-light text-fpm-blue mb-6">Галерея проекта</h2>
             <Carousel className="w-full">
               <CarouselContent>
                 {project.gallery.map((image, index) => (
                   <CarouselItem key={index} className="basis-1/1 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                    <Dialog onOpenChange={(open) => !open && handleCloseDialog()}>
-                      <DialogTrigger asChild>
-                        <div 
-                          className="cursor-zoom-in p-1 relative group" 
-                          onClick={() => handleImageClick(index)}
-                        >
-                          <div className="overflow-hidden rounded-lg">
-                            <img 
-                              src={image} 
-                              alt={`${project.title} - изображение ${index + 1}`} 
-                              className="w-full h-48 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
-                            />
-                          </div>
-                        </div>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-5xl w-full p-2 bg-black/90 border-none">
-                        <DialogTitle className="sr-only">Просмотр изображения</DialogTitle>
-                        <div className="relative">
-                          {selectedImageIndex !== null && (
-                            <img 
-                              src={project.gallery[selectedImageIndex]} 
-                              alt={`${project.title} - изображение ${selectedImageIndex + 1}`} 
-                              className="w-full h-auto object-contain max-h-[80vh]"
-                            />
-                          )}
-                          <button 
-                            onClick={handlePrevImage}
-                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors z-10"
-                            aria-label="Предыдущее изображение"
-                          >
-                            <ChevronLeft className="h-6 w-6" />
-                          </button>
-                          <button 
-                            onClick={handleNextImage}
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors z-10"
-                            aria-label="Следующее изображение"
-                          >
-                            <ChevronRight className="h-6 w-6" />
-                          </button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <ProjectGalleryImage
+                      src={image}
+                      alt={`${project.title} - изображение ${index + 1}`}
+                      index={index}
+                      onClick={handleImageClick}
+                      selectedImageIndex={selectedImageIndex}
+                      onPrev={handlePrevImage}
+                      onNext={handleNextImage}
+                    />
                   </CarouselItem>
                 ))}
               </CarouselContent>
@@ -222,7 +188,6 @@ const ProjectDetail = () => {
             </Carousel>
           </div>
           
-          {/* Project details */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
             <div className="lg:col-span-2">
               <h2 className="text-2xl font-light text-fpm-blue mb-4">О проекте</h2>
@@ -284,9 +249,8 @@ const ProjectDetail = () => {
             </div>
           </div>
           
-          {/* Contact section */}
           <div className="bg-gray-50 rounded-lg p-8 text-center mb-16">
-            <h2 className="text-2xl font-light text-fpm-blue mb-4">Хотите реализовать подобный проект?</h2>
+            <h2 className="text-2xl font-light text-fpm-blue mb-4">Хотите реализова��ь подобный проект?</h2>
             <p className="text-gray-600 mb-6 max-w-3xl mx-auto font-light">
               Наша команда готова помочь вам воплотить в жизнь проект любой сложности. 
               Расскажите нам о своих потребностях, и мы предложим оптимальное решение.
@@ -299,7 +263,6 @@ const ProjectDetail = () => {
             </Button>
           </div>
           
-          {/* Related projects section */}
           <div className="mb-16">
             <h2 className="text-2xl font-light text-fpm-blue mb-6">Похожие проекты</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
