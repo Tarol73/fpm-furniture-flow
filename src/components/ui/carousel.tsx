@@ -62,6 +62,7 @@ const Carousel = React.forwardRef<
       {
         ...opts,
         axis: orientation === "horizontal" ? "x" : "y",
+        align: "start", // Ensure items are aligned to the start of the container
       },
       plugins
     )
@@ -155,6 +156,7 @@ const CarouselContent = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
   const { carouselRef, orientation } = useCarousel()
+  const isMobile = useIsMobile()
 
   return (
     <div ref={carouselRef} className="overflow-hidden">
@@ -162,7 +164,10 @@ const CarouselContent = React.forwardRef<
         ref={ref}
         className={cn(
           "flex",
-          orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
+          // Adjust the negative margin for mobile to ensure proper alignment
+          orientation === "horizontal" ? 
+            (isMobile ? "ml-0 md:-ml-4" : "-ml-4") : 
+            "-mt-4 flex-col",
           className
         )}
         {...props}
@@ -177,6 +182,7 @@ const CarouselItem = React.forwardRef<
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
   const { orientation } = useCarousel()
+  const isMobile = useIsMobile()
 
   return (
     <div
@@ -185,7 +191,10 @@ const CarouselItem = React.forwardRef<
       aria-roledescription="slide"
       className={cn(
         "min-w-0 shrink-0 grow-0 basis-full",
-        orientation === "horizontal" ? "pl-4" : "pt-4",
+        // Adjust padding for mobile devices
+        orientation === "horizontal" ? 
+          (isMobile ? "px-1 md:pl-4" : "pl-4") : 
+          "pt-4",
         className
       )}
       {...props}

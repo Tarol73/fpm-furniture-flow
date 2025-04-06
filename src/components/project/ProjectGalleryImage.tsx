@@ -38,11 +38,11 @@ const ProjectGalleryImage = ({
         >
           <div className="overflow-hidden rounded-lg">
             {isMobile ? (
-              // On mobile, use contain to ensure full image is visible
+              // For mobile, ensure image is centered and fully visible
               <img 
                 src={src} 
                 alt={alt} 
-                className="w-full h-48 object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-48 object-contain rounded-lg transition-transform duration-300 group-hover:scale-105 mx-auto"
               />
             ) : (
               // On desktop, use cover for more aesthetic appearance
