@@ -27,9 +27,9 @@ const HeroSection = () => {
                 FPM
               </h1>
               <div className="flex flex-col justify-between text-right leading-none">
-                <span className="text-sm md:text-base lg:text-lg font-extralight tracking-wide">FURNITURE</span>
-                <span className="text-sm md:text-base lg:text-lg font-extralight tracking-wide">PROJECT</span>
-                <span className="text-sm md:text-base lg:text-lg font-extralight tracking-wide">MANAGEMENT</span>
+                <span className="text-xs md:text-sm lg:text-base font-extralight tracking-wide">FURNITURE</span>
+                <span className="text-xs md:text-sm lg:text-base font-extralight tracking-wide">PROJECT</span>
+                <span className="text-xs md:text-sm lg:text-base font-extralight tracking-wide">MANAGEMENT</span>
               </div>
             </div>
           </div>
@@ -41,18 +41,9 @@ const HeroSection = () => {
             От согласования ТЗ до финальной приемки — ваш проект в надежных руках
           </p>
           <div className="mt-8 flex flex-wrap gap-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
-            <Button size="lg" className="bg-fpm-teal hover:bg-fpm-teal/90 text-white font-medium">
+            <Button size="lg" className="bg-fpm-teal hover:bg-fpm-teal/90 text-white font-medium contact-btn">
               Обсудить проект
             </Button>
-            {!isMobile && (
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="bg-transparent hover:bg-white/10 text-white border-white"
-              >
-                Узнать больше
-              </Button>
-            )}
           </div>
         </div>
       </div>

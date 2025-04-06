@@ -4,6 +4,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Phone, Mail, MapPin, Clock, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ContactDialog from '@/components/contact/ContactDialog';
 
 const Contact = () => {
   useEffect(() => {
@@ -28,6 +29,23 @@ const Contact = () => {
     return () => {
       animatedElements.forEach(el => {
         observer.unobserve(el);
+      });
+    };
+  }, []);
+
+  // Initialize event listeners for contact buttons
+  useEffect(() => {
+    const contactButtons = document.querySelectorAll('.contact-btn');
+    contactButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Dispatch custom event to open dialog
+        document.dispatchEvent(new CustomEvent('open-contact-dialog'));
+      });
+    });
+    
+    return () => {
+      contactButtons.forEach(button => {
+        button.removeEventListener('click', () => {});
       });
     };
   }, []);
@@ -104,54 +122,14 @@ const Contact = () => {
             <div className="animate-on-scroll">
               <h2 className="text-3xl font-light text-fpm-blue mb-8">Напишите нам</h2>
               
-              <form className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block text-lg text-gray-700 mb-2">Имя</label>
-                  <input
-                    type="text"
-                    id="name"
-                    className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-fpm-teal"
-                    placeholder="Ваше имя"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="email" className="block text-lg text-gray-700 mb-2">Email</label>
-                  <input
-                    type="email"
-                    id="email"
-                    className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-fpm-teal"
-                    placeholder="Ваш email"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="phone" className="block text-lg text-gray-700 mb-2">Телефон</label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-fpm-teal"
-                    placeholder="Ваш телефон"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="message" className="block text-lg text-gray-700 mb-2">Сообщение</label>
-                  <textarea
-                    id="message"
-                    rows={5}
-                    className="w-full border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-fpm-teal"
-                    placeholder="Ваше сообщение"
-                    required
-                  ></textarea>
-                </div>
-                
-                <Button className="bg-fpm-teal hover:bg-fpm-teal/90 text-white px-8 py-3 text-lg">
-                  Отправить сообщение
+              <div className="bg-gray-50 p-8 rounded-lg">
+                <p className="text-lg text-gray-700 mb-6">
+                  Заполните форму ниже, и мы свяжемся с вами в ближайшее время для обсуждения вашего проекта.
+                </p>
+                <Button className="bg-fpm-teal hover:bg-fpm-teal/90 text-white px-8 py-3 text-lg w-full contact-btn">
+                  Заполнить форму
                 </Button>
-              </form>
+              </div>
             </div>
           </div>
         </div>
@@ -188,7 +166,7 @@ const Contact = () => {
               Наша команда профессионалов готова помочь вам с проектом мебельного оснащения. 
               Свяжитесь с нами сегодня для консультации.
             </p>
-            <Button className="bg-fpm-teal hover:bg-fpm-teal/90 text-white px-8 py-3 text-lg">
+            <Button className="bg-fpm-teal hover:bg-fpm-teal/90 text-white px-8 py-3 text-lg contact-btn">
               Обсудить проект
             </Button>
           </div>
@@ -196,6 +174,7 @@ const Contact = () => {
       </section>
       
       <Footer />
+      <ContactDialog />
     </div>
   );
 };

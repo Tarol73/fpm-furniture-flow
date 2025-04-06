@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Factory, Users, FileText, Search, BarChart4, Truck } from 'lucide-react';
+import ContactDialog from '@/components/contact/ContactDialog';
 
 const AboutPage = () => {
   useEffect(() => {
@@ -62,8 +63,8 @@ const AboutPage = () => {
             </div>
             <div className="animate-on-scroll">
               <img 
-                src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81" 
-                alt="Команда FPM" 
+                src="/lovable-uploads/141b5a58-6139-43d8-a533-792a3b3866b9.png" 
+                alt="FPM управление проектами" 
                 className="rounded-lg shadow-lg w-full h-auto"
               />
             </div>
@@ -275,15 +276,16 @@ const AboutPage = () => {
               Мы объединяем интересы всех сторон, превращая оснащение пространств в предсказуемый и управляемый процесс. Наша экспертиза — в умении видеть проект целиком, закрывая «слепые зоны» там, где другие теряют время и бюджет.
             </p>
             <div className="inline-block">
-              <a href="/contact" className="inline-block px-8 py-3 bg-fpm-teal text-white rounded-md hover:bg-fpm-teal/90 transition-colors">
+              <button className="inline-block px-8 py-3 bg-fpm-teal text-white rounded-md hover:bg-fpm-teal/90 transition-colors contact-btn">
                 Обсудить ваш проект
-              </a>
+              </button>
             </div>
           </div>
         </div>
       </section>
       
       <Footer />
+      <ContactDialog />
     </div>
   );
 };

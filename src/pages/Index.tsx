@@ -5,6 +5,7 @@ import WhyFPMSection from '@/components/home/WhyFPMSection';
 import ForWhomSection from '@/components/home/ForWhomSection';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import ContactDialog from '@/components/contact/ContactDialog';
 
 const Index = () => {
   return (
@@ -16,6 +17,7 @@ const Index = () => {
         <ForWhomSection />
       </main>
       <Footer />
+      <ContactDialog />
     </div>
   );
 };
