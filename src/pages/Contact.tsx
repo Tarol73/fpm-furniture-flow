@@ -5,6 +5,7 @@ import Footer from '@/components/layout/Footer';
 import { Phone, Mail, MapPin, Clock, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ContactDialog from '@/components/contact/ContactDialog';
+import ContactForm from '@/components/contact/ContactForm';
 
 const Contact = () => {
   useEffect(() => {
@@ -121,14 +122,8 @@ const Contact = () => {
             {/* Contact form */}
             <div className="animate-on-scroll">
               <h2 className="text-3xl font-light text-fpm-blue mb-8">Напишите нам</h2>
-              
               <div className="bg-gray-50 p-8 rounded-lg">
-                <p className="text-lg text-gray-700 mb-6">
-                  Заполните форму ниже, и мы свяжемся с вами в ближайшее время для обсуждения вашего проекта.
-                </p>
-                <Button className="bg-fpm-teal hover:bg-fpm-teal/90 text-white px-8 py-3 text-lg w-full contact-btn">
-                  Заполнить форму
-                </Button>
+                <ContactForm />
               </div>
             </div>
           </div>

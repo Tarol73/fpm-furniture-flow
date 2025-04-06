@@ -28,6 +28,15 @@ const Footer = () => {
     });
   };
 
+  // Function to handle navigation and scroll to top
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+
   return (
     <footer className="bg-fpm-blue text-white">
       <div className="container mx-auto px-4 py-12">
@@ -85,12 +94,12 @@ const Footer = () => {
           <div className="md:col-span-1">
             <h4 className="text-lg font-light mb-4">Навигация</h4>
             <ul className="space-y-2">
-              <li><Link to="/" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Главная</Link></li>
-              <li><Link to="/services" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Заказчикам</Link></li>
-              <li><Link to="/partners" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Партнерам</Link></li>
-              <li><Link to="/projects" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Кейсы</Link></li>
-              <li><Link to="/about" className="text-sm text-gray-300 hover:text-white transition-colors font-light">О компании</Link></li>
-              <li><Link to="/contact" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Контакты</Link></li>
+              <li><button onClick={() => handleNavigate('/')} className="text-sm text-gray-300 hover:text-white transition-colors font-light">Главная</button></li>
+              <li><button onClick={() => handleNavigate('/services')} className="text-sm text-gray-300 hover:text-white transition-colors font-light">Заказчикам</button></li>
+              <li><button onClick={() => handleNavigate('/partners')} className="text-sm text-gray-300 hover:text-white transition-colors font-light">Партнерам</button></li>
+              <li><button onClick={() => handleNavigate('/projects')} className="text-sm text-gray-300 hover:text-white transition-colors font-light">Кейсы</button></li>
+              <li><button onClick={() => handleNavigate('/about')} className="text-sm text-gray-300 hover:text-white transition-colors font-light">О компании</button></li>
+              <li><button onClick={() => handleNavigate('/contact')} className="text-sm text-gray-300 hover:text-white transition-colors font-light">Контакты</button></li>
             </ul>
           </div>
 

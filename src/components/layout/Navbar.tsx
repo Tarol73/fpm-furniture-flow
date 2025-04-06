@@ -32,7 +32,13 @@ const Navbar = () => {
 
   useEffect(() => {
     setMobileMenuOpen(false);
+    // Scroll to top when location changes
+    window.scrollTo(0, 0);
   }, [location]);
+
+  const handleLogoClick = () => {
+    window.scrollTo(0, 0);
+  };
 
   return (
     <header
@@ -42,7 +48,7 @@ const Navbar = () => {
       )}
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center">
+        <Link to="/" className="flex items-center" onClick={handleLogoClick}>
           <img 
             src="/lovable-uploads/c828dd8c-3f9c-4993-b8c4-56f44713a36a.png" 
             alt="FPM Logo" 
@@ -91,7 +97,7 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
-            <Button className="w-full mt-4 bg-fpm-teal hover:bg-fpm-teal/90 text-white font-light">
+            <Button className="w-full mt-4 bg-fpm-teal hover:bg-fpm-teal/90 text-white font-light contact-btn">
               Обсудить проект
             </Button>
           </div>
