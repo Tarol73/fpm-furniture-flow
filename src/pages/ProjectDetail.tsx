@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -15,11 +14,13 @@ import {
   Dialog, 
   DialogContent, 
   DialogTitle,
-  DialogTrigger 
+  DialogTrigger,
+  DialogDescription 
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import ContactDialog from '@/components/contact/ContactDialog';
 
 // Sample detailed project data
 const projectsDetailData = [
@@ -81,6 +82,14 @@ const ProjectDetail = () => {
   const handleCloseDialog = () => {
     setSelectedImageIndex(null);
   };
+
+  const handleContactClick = () => {
+    document.dispatchEvent(new CustomEvent('open-contact-dialog'));
+  };
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -282,11 +291,12 @@ const ProjectDetail = () => {
               Наша команда готова помочь вам воплотить в жизнь проект любой сложности. 
               Расскажите нам о своих потребностях, и мы предложим оптимальное решение.
             </p>
-            <Link to="/contact">
-              <Button className="bg-fpm-teal hover:bg-fpm-teal/90 text-white font-light">
-                Связаться с нами
-              </Button>
-            </Link>
+            <Button 
+              className="bg-fpm-teal hover:bg-fpm-teal/90 text-white font-light contact-btn" 
+              onClick={handleContactClick}
+            >
+              Связаться с нами
+            </Button>
           </div>
           
           {/* Related projects section */}
@@ -319,6 +329,7 @@ const ProjectDetail = () => {
         </div>
       </main>
       <Footer />
+      <ContactDialog />
     </div>
   );
 };

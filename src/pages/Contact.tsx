@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -26,11 +25,19 @@ const Contact = () => {
     animatedElements.forEach(el => {
       observer.observe(el);
     });
+
+    // Initialize Yandex Maps
+    const script = document.createElement('script');
+    script.src = 'https://api-maps.yandex.ru/2.1/?apikey=ваш_API_ключ&lang=ru_RU';
+    script.async = true;
+    script.onload = initMap;
+    document.body.appendChild(script);
     
     return () => {
       animatedElements.forEach(el => {
         observer.unobserve(el);
       });
+      document.body.removeChild(script);
     };
   }, []);
 
@@ -50,6 +57,27 @@ const Contact = () => {
       });
     };
   }, []);
+
+  // Initialize Yandex Map
+  const initMap = () => {
+    if (window.ymaps) {
+      window.ymaps.ready(() => {
+        const myMap = new window.ymaps.Map('map', {
+          center: [55.86, 37.51], // Coordinates for Дыбенко, 7/1
+          zoom: 16
+        });
+        
+        const myPlacemark = new window.ymaps.Placemark([55.86, 37.51], {
+          hintContent: 'FPM',
+          balloonContent: 'Москва, ул. Дыбенко, д. 7/1, офис 460'
+        }, {
+          preset: 'islands#blueIcon'
+        });
+        
+        myMap.geoObjects.add(myPlacemark);
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -102,7 +130,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-light mb-2">Адрес</h3>
-                    <p className="text-lg text-gray-700">Москва, ул. Примерная, 123</p>
+                    <p className="text-lg text-gray-700">Москва, ул. Дыбенко, д. 7/1, офис 460</p>
                   </div>
                 </div>
                 
@@ -136,13 +164,7 @@ const Contact = () => {
           <h2 className="text-3xl font-light text-fpm-blue mb-8 text-center animate-on-scroll">Мы на карте</h2>
           
           <div className="rounded-lg overflow-hidden shadow-lg h-[400px] animate-on-scroll">
-            {/* Placeholder for map - in a real project, you would integrate Google Maps or similar */}
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin className="w-16 h-16 text-fpm-teal mx-auto mb-4" />
-                <p className="text-xl text-gray-700">Москва, ул. Примерная, 123</p>
-              </div>
-            </div>
+            <div id="map" className="w-full h-full"></div>
           </div>
         </div>
       </section>
@@ -173,5 +195,12 @@ const Contact = () => {
     </div>
   );
 };
+
+// Add TypeScript interface for Yandex Maps
+declare global {
+  interface Window {
+    ymaps: any;
+  }
+}
 
 export default Contact;

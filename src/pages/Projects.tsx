@@ -1,9 +1,9 @@
-
 import React from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { ProjectFilter } from '@/components/projects/ProjectFilter';
+import ContactDialog from '@/components/contact/ContactDialog';
 
 // Sample project data
 const projectsData = [
@@ -84,6 +84,11 @@ const Projects = () => {
 
   const categories = ['Все проекты', ...Array.from(new Set(projectsData.map(project => project.category)))];
 
+  // Function to trigger the contact dialog
+  const handleContactClick = () => {
+    document.dispatchEvent(new CustomEvent('open-contact-dialog'));
+  };
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -114,13 +119,17 @@ const Projects = () => {
             <p className="text-lg text-gray-600 mb-6 font-light">
               Хотите обсудить ваш проект или узнать больше о нашем подходе?
             </p>
-            <button className="bg-fpm-teal hover:bg-fpm-teal/90 text-white font-light py-3 px-8 rounded-md transition-colors">
+            <button 
+              className="bg-fpm-teal hover:bg-fpm-teal/90 text-white font-light py-3 px-8 rounded-md transition-colors contact-btn"
+              onClick={handleContactClick}
+            >
               Связаться с нами
             </button>
           </div>
         </div>
       </main>
       <Footer />
+      <ContactDialog />
     </div>
   );
 };
