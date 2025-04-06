@@ -35,7 +35,7 @@ const Contact = () => {
       script.type = 'text/javascript';
       script.charset = 'utf-8';
       script.async = true;
-      script.src = 'https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A7bbefed9823fa5dba955ffe86e73f710310e78cd9a55af1fa72e1d13978fbc3f&amp;width=100%25&amp;height=400&amp;lang=ru_RU&amp;scroll=true';
+      script.src = 'https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A7bbefed9823fa5dba955ffe86e73f710310e78cd9a55af1fa72e1d13978fbc3f&amp;width=320&amp;height=240&amp;lang=ru_RU&amp;scroll=true';
       mapContainerRef.current.appendChild(script);
     }
     
