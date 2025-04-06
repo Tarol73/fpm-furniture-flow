@@ -1,9 +1,24 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Phone, Mail, MapPin } from 'lucide-react';
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  // Function to navigate to services page and scroll to specific section
+  const handleServiceClick = (sectionId: string) => {
+    navigate('/services');
+    
+    // Use setTimeout to ensure navigation completes before scrolling
+    setTimeout(() => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   return (
     <footer className="bg-fpm-blue text-white">
       <div className="container mx-auto px-4 py-12">
@@ -20,10 +35,38 @@ const Footer = () => {
           <div className="md:col-span-1">
             <h4 className="text-lg font-light mb-4">Услуги</h4>
             <ul className="space-y-2">
-              <li><Link to="/services" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Анализ проекта</Link></li>
-              <li><Link to="/services" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Подбор производителей</Link></li>
-              <li><Link to="/services" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Контроль производства</Link></li>
-              <li><Link to="/services" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Логистика и сборка</Link></li>
+              <li>
+                <button 
+                  onClick={() => handleServiceClick('analysis')} 
+                  className="text-sm text-gray-300 hover:text-white transition-colors font-light"
+                >
+                  Анализ проекта
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleServiceClick('manufacturers')} 
+                  className="text-sm text-gray-300 hover:text-white transition-colors font-light"
+                >
+                  Подбор производителей
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleServiceClick('control')} 
+                  className="text-sm text-gray-300 hover:text-white transition-colors font-light"
+                >
+                  Контроль производства
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleServiceClick('logistics')} 
+                  className="text-sm text-gray-300 hover:text-white transition-colors font-light"
+                >
+                  Логистика и сборка
+                </button>
+              </li>
             </ul>
           </div>
 

@@ -80,7 +80,7 @@ const Services = () => {
           {/* Main services grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Service 1 */}
-            <div className="bg-white border border-gray-100 p-8 rounded-lg shadow-md hover-lift animate-on-scroll">
+            <div id="analysis" className="bg-white border border-gray-100 p-8 rounded-lg shadow-md hover-lift animate-on-scroll">
               <div className="w-16 h-16 rounded-full bg-fpm-teal/10 flex items-center justify-center mb-6">
                 <Search className="w-8 h-8 text-fpm-teal" />
               </div>
@@ -102,7 +102,7 @@ const Services = () => {
             </div>
             
             {/* Service 2 */}
-            <div className="bg-white border border-gray-100 p-8 rounded-lg shadow-md hover-lift animate-on-scroll">
+            <div id="manufacturers" className="bg-white border border-gray-100 p-8 rounded-lg shadow-md hover-lift animate-on-scroll">
               <div className="w-16 h-16 rounded-full bg-fpm-teal/10 flex items-center justify-center mb-6">
                 <Factory className="w-8 h-8 text-fpm-teal" />
               </div>
@@ -168,7 +168,7 @@ const Services = () => {
             </div>
             
             {/* Service 5 */}
-            <div className="bg-white border border-gray-100 p-8 rounded-lg shadow-md hover-lift animate-on-scroll">
+            <div id="control" className="bg-white border border-gray-100 p-8 rounded-lg shadow-md hover-lift animate-on-scroll">
               <div className="w-16 h-16 rounded-full bg-fpm-teal/10 flex items-center justify-center mb-6">
                 <BarChart4 className="w-8 h-8 text-fpm-teal" />
               </div>
@@ -190,7 +190,7 @@ const Services = () => {
             </div>
             
             {/* Service 6 */}
-            <div className="bg-white border border-gray-100 p-8 rounded-lg shadow-md hover-lift animate-on-scroll">
+            <div id="logistics" className="bg-white border border-gray-100 p-8 rounded-lg shadow-md hover-lift animate-on-scroll">
               <div className="w-16 h-16 rounded-full bg-fpm-teal/10 flex items-center justify-center mb-6">
                 <Truck className="w-8 h-8 text-fpm-teal" />
               </div>

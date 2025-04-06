@@ -6,7 +6,7 @@ const features = [
   {
     icon: <Check className="w-12 h-12 text-fpm-orange" />,
     title: 'База проверенных производителей',
-    description: 'Сотрудничаем с более чем 200 надежными фабриками, что гарантирует качество и своевременное выполнение заказов.'
+    description: 'Сотрудничаем с более чем 50 надежными фабриками, что гарантирует качество и своевременное выполнение заказов.'
   },
   {
     icon: <ShieldCheck className="w-12 h-12 text-fpm-orange" />,
@@ -30,8 +30,8 @@ const WhyFPMSection = () => {
     <section className="section-padding bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-fpm-blue">Почему FPM?</h2>
-          <p className="mt-4 text-lg text-gray-600">
+          <h2 className="text-3xl md:text-4xl font-light text-fpm-blue">Почему FPM?</h2>
+          <p className="mt-4 text-lg text-gray-600 font-light">
             Мы берем на себя все аспекты управления мебельными проектами, чтобы вы могли сосредоточиться на своем основном бизнесе
           </p>
         </div>
@@ -45,10 +45,10 @@ const WhyFPMSection = () => {
               <div className="flex justify-center mb-4">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-semibold text-center mb-3 text-fpm-blue">
+              <h3 className="text-xl font-light text-center mb-3 text-fpm-blue">
                 {feature.title}
               </h3>
-              <p className="text-gray-600 text-center">
+              <p className="text-gray-600 text-center font-light">
                 {feature.description}
               </p>
             </div>

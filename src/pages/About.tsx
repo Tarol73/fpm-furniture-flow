@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -207,58 +206,46 @@ const AboutPage = () => {
           <h2 className="text-3xl md:text-4xl font-light text-center mb-16 animate-on-scroll">Почему FPM — критически важное звено для всех сторон?</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* For contractors */}
+            {/* For contractors - Changed from numbered list to bullet points */}
             <div className="bg-gray-50 p-8 rounded-lg animate-on-scroll">
               <h3 className="text-2xl font-light text-fpm-blue mb-6">Для генеральных подрядчиков</h3>
               <ul className="space-y-4">
                 <li className="flex items-start">
-                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
-                    <span className="text-fpm-teal font-medium">1</span>
-                  </div>
+                  <span className="text-fpm-teal mr-2">•</span>
                   <p className="text-gray-700">Снижение операционной нагрузки: Берем на себя управление мебельным оснащением — от поиска фабрик до приемки, что сокращает простои и риски срыва сроков.</p>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
-                    <span className="text-fpm-teal font-medium">2</span>
-                  </div>
+                  <span className="text-fpm-teal mr-2">•</span>
                   <p className="text-gray-700">Финансовая прозрачность: Исключаем переплаты за счет аудита производств и жесткого контроля бюджета.</p>
                 </li>
               </ul>
             </div>
             
-            {/* For architects */}
+            {/* For architects - Changed from numbered list to bullet points */}
             <div className="bg-gray-50 p-8 rounded-lg animate-on-scroll">
               <h3 className="text-2xl font-light text-fpm-blue mb-6">Для архитекторов и дизайнеров</h3>
               <ul className="space-y-4">
                 <li className="flex items-start">
-                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
-                    <span className="text-fpm-teal font-medium">1</span>
-                  </div>
+                  <span className="text-fpm-teal mr-2">•</span>
                   <p className="text-gray-700">Реализация амбициозных идей: Подбираем фабрики, способные воплотить сложные дизайн-решения (нестандартная мебель, авторские панели).</p>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
-                    <span className="text-fpm-teal font-medium">2</span>
-                  </div>
+                  <span className="text-fpm-teal mr-2">•</span>
                   <p className="text-gray-700">Техническая поддержка: Помогаем адаптировать креатив к производственным возможностям и нормам, сохраняя эстетику и функциональность.</p>
                 </li>
               </ul>
             </div>
             
-            {/* For manufacturers */}
+            {/* For manufacturers - Changed from numbered list to bullet points */}
             <div className="bg-gray-50 p-8 rounded-lg animate-on-scroll">
               <h3 className="text-2xl font-light text-fpm-blue mb-6">Для производителей мебели</h3>
               <ul className="space-y-4">
                 <li className="flex items-start">
-                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
-                    <span className="text-fpm-teal font-medium">1</span>
-                  </div>
+                  <span className="text-fpm-teal mr-2">•</span>
                   <p className="text-gray-700">Доступ к крупным проектам: Становимся их «окном» в сегмент коммерческих заказов, где требуется не только продукт, но и управленческая экспертиза.</p>
                 </li>
                 <li className="flex items-start">
-                  <div className="w-8 h-8 rounded-full bg-fpm-teal/10 flex items-center justify-center mr-3 mt-1">
-                    <span className="text-fpm-teal font-medium">2</span>
-                  </div>
+                  <span className="text-fpm-teal mr-2">•</span>
                   <p className="text-gray-700">Четкие требования: Структурируем ТЗ заказчиков, сокращая количество ошибок и доработок.</p>
                 </li>
               </ul>
