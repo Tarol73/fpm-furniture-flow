@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Phone, Mail, MapPin, Clock, Users } from 'lucide-react';
@@ -8,6 +8,8 @@ import ContactDialog from '@/components/contact/ContactDialog';
 import ContactForm from '@/components/contact/ContactForm';
 
 const Contact = () => {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
@@ -27,18 +29,28 @@ const Contact = () => {
       observer.observe(el);
     });
 
-    // Initialize Yandex Maps
-    const script = document.createElement('script');
-    script.src = 'https://api-maps.yandex.ru/2.1/?apikey=71d991f7-17b1-406f-af41-c8737fcbb62a&lang=ru_RU';
-    script.async = true;
-    script.onload = initMap;
-    document.body.appendChild(script);
+    // Initialize Yandex Maps using the constructor code
+    if (mapContainerRef.current) {
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.charset = 'utf-8';
+      script.async = true;
+      script.src = 'https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A7bbefed9823fa5dba955ffe86e73f710310e78cd9a55af1fa72e1d13978fbc3f&amp;width=100%25&amp;height=400&amp;lang=ru_RU&amp;scroll=true';
+      mapContainerRef.current.appendChild(script);
+    }
     
     return () => {
       animatedElements.forEach(el => {
         observer.unobserve(el);
       });
-      document.body.removeChild(script);
+      
+      // Clean up map script if it exists
+      if (mapContainerRef.current) {
+        const mapScript = mapContainerRef.current.querySelector('script');
+        if (mapScript) {
+          mapContainerRef.current.removeChild(mapScript);
+        }
+      }
     };
   }, []);
 
@@ -58,27 +70,6 @@ const Contact = () => {
       });
     };
   }, []);
-
-  // Initialize Yandex Map
-  const initMap = () => {
-    if (window.ymaps) {
-      window.ymaps.ready(() => {
-        const myMap = new window.ymaps.Map('map', {
-          center: [55.86, 37.51], // Coordinates for Дыбенко, 7/1
-          zoom: 16
-        });
-        
-        const myPlacemark = new window.ymaps.Placemark([55.86, 37.51], {
-          hintContent: 'FPM',
-          balloonContent: 'Москва, ул. Дыбенко, д. 7/1, офис 460'
-        }, {
-          preset: 'islands#blueIcon'
-        });
-        
-        myMap.geoObjects.add(myPlacemark);
-      });
-    }
-  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -165,7 +156,7 @@ const Contact = () => {
           <h2 className="text-3xl font-light text-fpm-blue mb-8 text-center animate-on-scroll">Мы на карте</h2>
           
           <div className="rounded-lg overflow-hidden shadow-lg h-[400px] animate-on-scroll">
-            <div id="map" className="w-full h-full"></div>
+            <div ref={mapContainerRef} className="w-full h-full"></div>
           </div>
         </div>
       </section>
