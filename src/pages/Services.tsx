@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { Search, Users, FileText, BarChart4, Truck, Factory, Check } from 'lucide-react';
+import { Search, Users, FileText, BarChart4, Truck, Factory, Check, Clock } from 'lucide-react';
 import ContactDialog from '@/components/contact/ContactDialog';
 
 const Services = () => {
@@ -293,6 +293,159 @@ const Services = () => {
                   <p>Финальная приемка установленной мебели и оборудования</p>
                 </li>
               </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* How we work section - Moved from Partners page */}
+      <section className="py-16 md:py-24 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-light mb-8 animate-on-scroll">Как мы работаем</h2>
+            <p className="text-lg text-gray-700 leading-relaxed animate-on-scroll">
+              Наш подход основан на четкой методологии, которая обеспечивает прозрачность процесса 
+              и гарантирует достижение поставленных целей в рамках бюджета и сроков.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {/* Step 1 */}
+            <div className="bg-white p-8 rounded-lg shadow-md hover-lift animate-on-scroll">
+              <div className="w-16 h-16 rounded-full bg-fpm-teal/10 flex items-center justify-center mb-6">
+                <Users className="w-8 h-8 text-fpm-teal" />
+              </div>
+              <h3 className="text-2xl font-light text-fpm-blue mb-4">1. Анализ и планирование</h3>
+              <p className="text-gray-700 mb-4">
+                Детальный анализ проекта, формирование требований и разработка стратегии реализации.
+              </p>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-start">
+                  <span className="text-fpm-teal mr-2">•</span>
+                  <p>Изучение проектной документации</p>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-fpm-teal mr-2">•</span>
+                  <p>Определение ключевых этапов</p>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-fpm-teal mr-2">•</span>
+                  <p>Формирование бюджета и графика</p>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Step 2 */}
+            <div className="bg-white p-8 rounded-lg shadow-md hover-lift animate-on-scroll">
+              <div className="w-16 h-16 rounded-full bg-fpm-teal/10 flex items-center justify-center mb-6">
+                <BarChart4 className="w-8 h-8 text-fpm-teal" />
+              </div>
+              <h3 className="text-2xl font-light text-fpm-blue mb-4">2. Реализация и контроль</h3>
+              <p className="text-gray-700 mb-4">
+                Координация всех участников процесса и контроль качества на каждом этапе.
+              </p>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-start">
+                  <span className="text-fpm-teal mr-2">•</span>
+                  <p>Организация взаимодействия</p>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-fpm-teal mr-2">•</span>
+                  <p>Контроль производства</p>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-fpm-teal mr-2">•</span>
+                  <p>Управление изменениями</p>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Step 3 */}
+            <div className="bg-white p-8 rounded-lg shadow-md hover-lift animate-on-scroll">
+              <div className="w-16 h-16 rounded-full bg-fpm-teal/10 flex items-center justify-center mb-6">
+                <Truck className="w-8 h-8 text-fpm-teal" />
+              </div>
+              <h3 className="text-2xl font-light text-fpm-blue mb-4">3. Завершение и приемка</h3>
+              <p className="text-gray-700 mb-4">
+                Организация финальных этапов проекта и закрытие всех формальностей.
+              </p>
+              <ul className="space-y-2 text-gray-700">
+                <li className="flex items-start">
+                  <span className="text-fpm-teal mr-2">•</span>
+                  <p>Координация поставок и монтажа</p>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-fpm-teal mr-2">•</span>
+                  <p>Контроль качества исполнения</p>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-fpm-teal mr-2">•</span>
+                  <p>Финальная приемка и документация</p>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Success Metrics - Moved from Partners page and updated */}
+      <section className="py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-light mb-8 animate-on-scroll">Наши показатели эффективности</h2>
+            <p className="text-lg text-gray-700 leading-relaxed animate-on-scroll">
+              Успех проекта измеряется не только его завершением, но и качеством процессов, 
+              которые ведут к этому результату.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Metric 1 - Updated */}
+            <div className="bg-gray-50 p-8 rounded-lg text-center animate-on-scroll">
+              <div className="w-20 h-20 rounded-full bg-fpm-teal/10 flex items-center justify-center mx-auto mb-6">
+                <Clock className="w-10 h-10 text-fpm-teal" />
+              </div>
+              <div className="text-4xl font-light text-fpm-blue mb-2">92%</div>
+              <h3 className="text-xl font-light mb-4">Своевременность</h3>
+              <p className="text-gray-700">
+                Наших проектов завершаются в срок или раньше запланированной даты
+              </p>
+            </div>
+            
+            {/* Metric 2 */}
+            <div className="bg-gray-50 p-8 rounded-lg text-center animate-on-scroll">
+              <div className="w-20 h-20 rounded-full bg-fpm-teal/10 flex items-center justify-center mx-auto mb-6">
+                <Users className="w-10 h-10 text-fpm-teal" />
+              </div>
+              <div className="text-4xl font-light text-fpm-blue mb-2">95%</div>
+              <h3 className="text-xl font-light mb-4">Удовлетворенность</h3>
+              <p className="text-gray-700">
+                Клиентов полностью удовлетворены результатами нашей работы
+              </p>
+            </div>
+            
+            {/* Metric 3 - Updated description */}
+            <div className="bg-gray-50 p-8 rounded-lg text-center animate-on-scroll">
+              <div className="w-20 h-20 rounded-full bg-fpm-teal/10 flex items-center justify-center mx-auto mb-6">
+                <BarChart4 className="w-10 h-10 text-fpm-teal" />
+              </div>
+              <div className="text-4xl font-light text-fpm-blue mb-2">15%</div>
+              <h3 className="text-xl font-light mb-4">Экономия</h3>
+              <p className="text-gray-700">
+                Средняя экономия бюджета благодаря оптимизации процессов и тендерам
+              </p>
+            </div>
+            
+            {/* Metric 4 */}
+            <div className="bg-gray-50 p-8 rounded-lg text-center animate-on-scroll">
+              <div className="w-20 h-20 rounded-full bg-fpm-teal/10 flex items-center justify-center mx-auto mb-6">
+                <Truck className="w-10 h-10 text-fpm-teal" />
+              </div>
+              <div className="text-4xl font-light text-fpm-blue mb-2">50+</div>
+              <h3 className="text-xl font-light mb-4">Проектов</h3>
+              <p className="text-gray-700">
+                Успешно реализованных проектов различной сложности
+              </p>
             </div>
           </div>
         </div>

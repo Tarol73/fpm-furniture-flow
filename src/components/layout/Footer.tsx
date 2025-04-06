@@ -45,7 +45,7 @@ const Footer = () => {
           </div>
 
           <div className="md:col-span-1">
-            <h4 className="text-lg font-light mb-4">Услуги</h4>
+            <h4 className="text-lg font-light mb-4">Заказчикам</h4>
             <ul className="space-y-2">
               <li>
                 <button 
@@ -86,8 +86,9 @@ const Footer = () => {
             <h4 className="text-lg font-light mb-4">Навигация</h4>
             <ul className="space-y-2">
               <li><Link to="/" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Главная</Link></li>
+              <li><Link to="/services" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Заказчикам</Link></li>
+              <li><Link to="/partners" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Партнерам</Link></li>
               <li><Link to="/projects" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Кейсы</Link></li>
-              <li><Link to="/partners" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Для партнеров</Link></li>
               <li><Link to="/about" className="text-sm text-gray-300 hover:text-white transition-colors font-light">О компании</Link></li>
               <li><Link to="/contact" className="text-sm text-gray-300 hover:text-white transition-colors font-light">Контакты</Link></li>
             </ul>
@@ -101,8 +102,10 @@ const Footer = () => {
                 <span className="text-sm font-light">+7 (916) 555-58-55</span>
               </li>
               <li className="flex items-start">
-                <Mail size={18} className="mr-2 mt-1 text-fpm-orange" />
-                <span className="text-sm font-light">info@f-p-m.group</span>
+                <a href="mailto:info@f-p-m.group" className="flex items-start hover:text-gray-200 transition-colors">
+                  <Mail size={18} className="mr-2 mt-1 text-fpm-orange" />
+                  <span className="text-sm font-light">info@f-p-m.group</span>
+                </a>
               </li>
               <li className="flex items-start">
                 <MapPin size={18} className="mr-2 mt-1 text-fpm-orange" />
