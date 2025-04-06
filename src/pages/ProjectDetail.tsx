@@ -11,7 +11,12 @@ import {
   CarouselNext, 
   CarouselPrevious 
 } from '@/components/ui/carousel';
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogTitle,
+  DialogTrigger 
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Calendar, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -107,7 +112,7 @@ const ProjectDetail = () => {
           
           {/* Main project image */}
           <div className="relative mb-12 rounded-lg overflow-hidden shadow-md">
-            <Dialog>
+            <Dialog onOpenChange={(open) => !open && handleCloseDialog()}>
               <DialogTrigger asChild>
                 <div className="cursor-zoom-in relative" onClick={() => handleImageClick(0)}>
                   <img 
@@ -122,26 +127,31 @@ const ProjectDetail = () => {
                   </div>
                 </div>
               </DialogTrigger>
-              <DialogContent className="max-w-5xl w-full p-2 bg-black/90 border-none relative">
-                <img 
-                  src={selectedImageIndex !== null ? project.gallery[selectedImageIndex] : project.mainImage} 
-                  alt={project.title} 
-                  className="w-full h-auto object-contain max-h-[90vh]"
-                />
-                <button 
-                  onClick={handlePrevImage}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
-                  aria-label="Предыдущее изображение"
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </button>
-                <button 
-                  onClick={handleNextImage}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
-                  aria-label="Следующее изображение"
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </button>
+              <DialogContent className="max-w-5xl w-full p-2 bg-black/90 border-none">
+                <DialogTitle className="sr-only">Просмотр изображения</DialogTitle>
+                <div className="relative">
+                  {selectedImageIndex !== null && (
+                    <img 
+                      src={project.gallery[selectedImageIndex]} 
+                      alt={`${project.title} - изображение ${selectedImageIndex + 1}`} 
+                      className="w-full h-auto object-contain max-h-[80vh]"
+                    />
+                  )}
+                  <button 
+                    onClick={handlePrevImage}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors z-10"
+                    aria-label="Предыдущее изображение"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+                  <button 
+                    onClick={handleNextImage}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors z-10"
+                    aria-label="Следующее изображение"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </button>
+                </div>
               </DialogContent>
             </Dialog>
           </div>
@@ -153,9 +163,12 @@ const ProjectDetail = () => {
               <CarouselContent>
                 {project.gallery.map((image, index) => (
                   <CarouselItem key={index} className="basis-1/1 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                    <Dialog>
+                    <Dialog onOpenChange={(open) => !open && handleCloseDialog()}>
                       <DialogTrigger asChild>
-                        <div className="cursor-zoom-in p-1 relative group" onClick={() => handleImageClick(index)}>
+                        <div 
+                          className="cursor-zoom-in p-1 relative group" 
+                          onClick={() => handleImageClick(index)}
+                        >
                           <div className="overflow-hidden rounded-lg">
                             <img 
                               src={image} 
@@ -165,26 +178,31 @@ const ProjectDetail = () => {
                           </div>
                         </div>
                       </DialogTrigger>
-                      <DialogContent className="max-w-5xl w-full p-2 bg-black/90 border-none relative">
-                        <img 
-                          src={selectedImageIndex !== null ? project.gallery[selectedImageIndex] : image} 
-                          alt={`${project.title} - изображение ${index + 1}`} 
-                          className="w-full h-auto object-contain max-h-[90vh]"
-                        />
-                        <button 
-                          onClick={handlePrevImage}
-                          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
-                          aria-label="Предыдущее изображение"
-                        >
-                          <ChevronLeft className="h-6 w-6" />
-                        </button>
-                        <button 
-                          onClick={handleNextImage}
-                          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
-                          aria-label="Следующее изображение"
-                        >
-                          <ChevronRight className="h-6 w-6" />
-                        </button>
+                      <DialogContent className="max-w-5xl w-full p-2 bg-black/90 border-none">
+                        <DialogTitle className="sr-only">Просмотр изображения</DialogTitle>
+                        <div className="relative">
+                          {selectedImageIndex !== null && (
+                            <img 
+                              src={project.gallery[selectedImageIndex]} 
+                              alt={`${project.title} - изображение ${selectedImageIndex + 1}`} 
+                              className="w-full h-auto object-contain max-h-[80vh]"
+                            />
+                          )}
+                          <button 
+                            onClick={handlePrevImage}
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors z-10"
+                            aria-label="Предыдущее изображение"
+                          >
+                            <ChevronLeft className="h-6 w-6" />
+                          </button>
+                          <button 
+                            onClick={handleNextImage}
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors z-10"
+                            aria-label="Следующее изображение"
+                          >
+                            <ChevronRight className="h-6 w-6" />
+                          </button>
+                        </div>
                       </DialogContent>
                     </Dialog>
                   </CarouselItem>
