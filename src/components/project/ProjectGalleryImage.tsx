@@ -36,14 +36,16 @@ const ProjectGalleryImage = ({
             onClick(index);
           }}
         >
-          <div className="overflow-hidden rounded-lg">
+          <div className="overflow-hidden rounded-lg w-full flex justify-center items-center">
             {isMobile ? (
-              // For mobile, ensure image is centered and fully visible
-              <img 
-                src={src} 
-                alt={alt} 
-                className="w-full h-48 object-contain rounded-lg transition-transform duration-300 group-hover:scale-105 mx-auto"
-              />
+              // For mobile, use a centered container with object-contain
+              <div className="w-full h-48 flex justify-center items-center bg-gray-50">
+                <img 
+                  src={src} 
+                  alt={alt} 
+                  className="max-w-full max-h-full object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
             ) : (
               // On desktop, use cover for more aesthetic appearance
               <AspectRatio ratio={4/3} className="bg-muted">
