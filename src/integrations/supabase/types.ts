@@ -9,7 +9,146 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      project_photos: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          id: number
+          image_url: string
+          is_main: boolean | null
+          project_id: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order: number
+          id?: number
+          image_url: string
+          is_main?: boolean | null
+          project_id?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          id?: number
+          image_url?: string
+          is_main?: boolean | null
+          project_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_photos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_tags: {
+        Row: {
+          project_id: number
+          tag_id: number
+        }
+        Insert: {
+          project_id: number
+          tag_id: number
+        }
+        Update: {
+          project_id?: number
+          tag_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_tags_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          area: string | null
+          budget: string | null
+          category: string
+          challenge: string | null
+          client: string | null
+          created_at: string | null
+          description: string
+          duration: string | null
+          full_description: string | null
+          id: number
+          location: string
+          results: string | null
+          solution: string | null
+          title: string
+          updated_at: string | null
+          year: string
+        }
+        Insert: {
+          area?: string | null
+          budget?: string | null
+          category: string
+          challenge?: string | null
+          client?: string | null
+          created_at?: string | null
+          description: string
+          duration?: string | null
+          full_description?: string | null
+          id?: number
+          location: string
+          results?: string | null
+          solution?: string | null
+          title: string
+          updated_at?: string | null
+          year: string
+        }
+        Update: {
+          area?: string | null
+          budget?: string | null
+          category?: string
+          challenge?: string | null
+          client?: string | null
+          created_at?: string | null
+          description?: string
+          duration?: string | null
+          full_description?: string | null
+          id?: number
+          location?: string
+          results?: string | null
+          solution?: string | null
+          title?: string
+          updated_at?: string | null
+          year?: string
+        }
+        Relationships: []
+      }
+      tags: {
+        Row: {
+          created_at: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -2,25 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { ProjectCard } from '@/components/projects/ProjectCard';
+import { ProjectCard, Project } from '@/components/projects/ProjectCard';
 import { ProjectFilter } from '@/components/projects/ProjectFilter';
 import ContactDialog from '@/components/contact/ContactDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-// Define the Project interface based on our database schema
-interface Project {
-  id: number;
-  title: string;
-  category: string;
-  location: string;
-  year: string;
-  description: string;
-  image?: string; // Main image URL
-  tags?: string[]; // Tags for the project
-}
 
 const Projects = () => {
   const [projects, setProjects] = useState<Project[]>([]);

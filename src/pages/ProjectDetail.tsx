@@ -27,10 +27,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
-interface ProjectTag {
-  name: string;
-}
+import { Project } from '@/components/projects/ProjectCard';
 
 interface ProjectPhoto {
   id: number;
@@ -40,33 +37,18 @@ interface ProjectPhoto {
   display_order: number;
 }
 
-interface Project {
-  id: number;
-  title: string;
-  category: string;
-  location: string;
-  year: string;
-  description: string;
-  full_description: string;
-  challenge: string;
-  solution: string;
-  results: string;
-  client: string;
-  duration: string;
-  area: string;
-  budget: string;
+interface ExtendedProject extends Project {
   photos?: ProjectPhoto[];
-  tags?: string[];
   mainImage?: string;
 }
 
 const ProjectDetail = () => {
   const { id } = useParams();
-  const [project, setProject] = useState<Project | null>(null);
+  const [project, setProject] = useState<ExtendedProject | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [relatedProjects, setRelatedProjects] = useState<Project[]>([]);
+  const [relatedProjects, setRelatedProjects] = useState<ExtendedProject[]>([]);
   const isMobile = useIsMobile();
   
   useEffect(() => {
@@ -110,7 +92,7 @@ const ProjectDetail = () => {
         // Extract tags
         const tags = tagsData.map(tag => tag.tags.name);
         
-        const projectWithDetails: Project = {
+        const projectWithDetails: ExtendedProject = {
           ...projectData,
           photos: photosData,
           tags: tags,
@@ -120,50 +102,25 @@ const ProjectDetail = () => {
         setProject(projectWithDetails);
         
         // Fetch related projects (same category, excluding current)
-        const { data: relatedData, error: relatedError } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('category', projectData.category)
-          .neq('id', id)
-          .limit(3);
-        
-        if (!relatedError && relatedData.length > 0) {
-          // Fetch main photos for related projects
-          const relatedIds = relatedData.map(p => p.id);
-          
-          const { data: relatedPhotos, error: relatedPhotosError } = await supabase
-            .from('project_photos')
-            .select('*')
-            .in('project_id', relatedIds)
-            .eq('is_main', true);
-          
-          const enhancedRelated = relatedData.map(relProj => {
-            const photo = relatedPhotos?.find(p => p.project_id === relProj.id);
-            return {
-              ...relProj,
-              mainImage: photo?.image_url || '/placeholder.svg'
-            };
-          });
-          
-          setRelatedProjects(enhancedRelated);
-        } else {
-          // If no related projects by category, get any 3 projects except current
-          const { data: anyRelated, error: anyRelatedError } = await supabase
+        if (projectData) {
+          const { data: relatedData, error: relatedError } = await supabase
             .from('projects')
             .select('*')
+            .eq('category', projectData.category)
             .neq('id', id)
             .limit(3);
+          
+          if (!relatedError && relatedData && relatedData.length > 0) {
+            // Fetch main photos for related projects
+            const relatedIds = relatedData.map(p => p.id);
             
-          if (!anyRelatedError && anyRelated.length > 0) {
-            const relatedIds = anyRelated.map(p => p.id);
-            
-            const { data: relatedPhotos } = await supabase
+            const { data: relatedPhotos, error: relatedPhotosError } = await supabase
               .from('project_photos')
               .select('*')
               .in('project_id', relatedIds)
               .eq('is_main', true);
             
-            const enhancedRelated = anyRelated.map(relProj => {
+            const enhancedRelated = relatedData.map(relProj => {
               const photo = relatedPhotos?.find(p => p.project_id === relProj.id);
               return {
                 ...relProj,
@@ -172,6 +129,33 @@ const ProjectDetail = () => {
             });
             
             setRelatedProjects(enhancedRelated);
+          } else {
+            // If no related projects by category, get any 3 projects except current
+            const { data: anyRelated, error: anyRelatedError } = await supabase
+              .from('projects')
+              .select('*')
+              .neq('id', id)
+              .limit(3);
+              
+            if (!anyRelatedError && anyRelated && anyRelated.length > 0) {
+              const relatedIds = anyRelated.map(p => p.id);
+              
+              const { data: relatedPhotos } = await supabase
+                .from('project_photos')
+                .select('*')
+                .in('project_id', relatedIds)
+                .eq('is_main', true);
+              
+              const enhancedRelated = anyRelated.map(relProj => {
+                const photo = relatedPhotos?.find(p => p.project_id === relProj.id);
+                return {
+                  ...relProj,
+                  mainImage: photo?.image_url || '/placeholder.svg'
+                };
+              });
+              
+              setRelatedProjects(enhancedRelated);
+            }
           }
         }
         

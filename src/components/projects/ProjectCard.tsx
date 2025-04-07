@@ -5,13 +5,21 @@ import { Card } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
-interface Project {
+export interface Project {
   id: number;
   title: string;
   category: string;
   location: string;
   year: string;
   description: string;
+  full_description?: string;
+  challenge?: string;
+  solution?: string;
+  results?: string;
+  client?: string;
+  duration?: string;
+  area?: string;
+  budget?: string;
   image?: string;
   tags?: string[];
 }
