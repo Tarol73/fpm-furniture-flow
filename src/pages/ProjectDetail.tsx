@@ -20,14 +20,26 @@ import NotFoundState from '@/components/project/NotFoundState';
 // Types and Services
 import { ExtendedProject } from '@/types/project';
 import { fetchProjectById, fetchRelatedProjects } from '@/services/projectService';
+import { useCarouselNavigation } from '@/hooks/use-carousel-navigation';
 
 const ProjectDetail = () => {
   const { id } = useParams();
   const [project, setProject] = useState<ExtendedProject | null>(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [relatedProjects, setRelatedProjects] = useState<ExtendedProject[]>([]);
+  
+  // Use our custom hook for gallery navigation
+  const {
+    currentIndex: selectedImageIndex,
+    setCurrentIndex: setSelectedImageIndex,
+    goToNext: handleNextImage,
+    goToPrev: handlePrevImage
+  } = useCarouselNavigation({
+    itemCount: project?.photos?.length || 0,
+    initialIndex: null,
+    loop: true
+  });
   
   useEffect(() => {
     // Scroll to top when component mounts or id changes
@@ -64,18 +76,6 @@ const ProjectDetail = () => {
   // Handle image viewing
   const handleImageClick = (index: number | null) => {
     setSelectedImageIndex(index);
-  };
-
-  const handleNextImage = () => {
-    if (selectedImageIndex !== null && project?.photos) {
-      setSelectedImageIndex((selectedImageIndex + 1) % project.photos.length);
-    }
-  };
-
-  const handlePrevImage = () => {
-    if (selectedImageIndex !== null && project?.photos) {
-      setSelectedImageIndex((selectedImageIndex - 1 + project.photos.length) % project.photos.length);
-    }
   };
 
   const handleContactClick = () => {

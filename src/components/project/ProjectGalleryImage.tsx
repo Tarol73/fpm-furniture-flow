@@ -132,7 +132,7 @@ const ProjectGalleryImage = ({
             
             {/* Image counter */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-sm py-1 px-3 rounded-full">
-              {index + 1} / {selectedImageIndex !== null ? selectedImageIndex + 1 : '?'}
+              {index + 1} / {project?.photos?.length || 0}
             </div>
           </div>
         </DialogContent>
