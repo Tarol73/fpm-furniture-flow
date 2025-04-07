@@ -46,6 +46,7 @@ const ProjectGallery = ({
                 selectedImageIndex={selectedImageIndex}
                 onPrev={onPrev}
                 onNext={onNext}
+                totalPhotos={photos.length} // Pass the total number of photos
               />
             </CarouselItem>
           ))}

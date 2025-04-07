@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
@@ -14,6 +13,7 @@ interface ProjectGalleryImageProps {
   selectedImageIndex: number | null;
   onPrev: () => void;
   onNext: () => void;
+  totalPhotos: number;
 }
 
 const ProjectGalleryImage = ({
@@ -23,7 +23,8 @@ const ProjectGalleryImage = ({
   onClick,
   selectedImageIndex,
   onPrev,
-  onNext
+  onNext,
+  totalPhotos
 }: ProjectGalleryImageProps) => {
   const isMobile = useIsMobile();
   const isSelected = selectedImageIndex === index;
@@ -57,7 +58,6 @@ const ProjectGalleryImage = ({
             "transition-all duration-300 hover:shadow-md"
           )}>
             {isMobile ? (
-              // Mobile view - maintain aspect ratio but use object-cover
               <div className="w-full aspect-square flex justify-center items-center bg-gray-50">
                 <img 
                   src={src} 
@@ -67,7 +67,6 @@ const ProjectGalleryImage = ({
                 />
               </div>
             ) : (
-              // Desktop view - use aspect ratio component
               <AspectRatio ratio={4/3} className="bg-muted w-full">
                 <img 
                   src={src} 
@@ -79,7 +78,6 @@ const ProjectGalleryImage = ({
             )}
           </div>
           
-          {/* Overlay with subtle zoom indicator */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 rounded-lg flex items-center justify-center">
             <span className="scale-0 group-hover:scale-100 transition-transform duration-300 bg-black/50 text-white rounded-full p-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -95,7 +93,6 @@ const ProjectGalleryImage = ({
           <DialogTitle className="sr-only">Просмотр изображения</DialogTitle>
           <DialogDescription className="sr-only">Полноэкранный просмотр фотографии проекта</DialogDescription>
           
-          {/* Close button */}
           <button 
             onClick={handleClose}
             className="absolute right-2 top-2 bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors z-10"
@@ -111,7 +108,6 @@ const ProjectGalleryImage = ({
               className="max-w-full max-h-[85vh] object-contain"
             />
             
-            {/* Navigation buttons with improved positioning */}
             <div className="absolute inset-x-0 top-1/2 transform -translate-y-1/2 flex justify-between pointer-events-none px-4">
               <button 
                 onClick={handlePrevClick}
@@ -130,9 +126,8 @@ const ProjectGalleryImage = ({
               </button>
             </div>
             
-            {/* Image counter */}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-sm py-1 px-3 rounded-full">
-              {index + 1} / {project?.photos?.length || 0}
+              {index + 1} / {totalPhotos || 0}
             </div>
           </div>
         </DialogContent>
