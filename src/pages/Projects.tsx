@@ -9,10 +9,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Database } from '@/integrations/supabase/types';
+
+type ProjectWithDetails = Project & {
+  image?: string;
+  tags?: string[];
+};
 
 const Projects = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectWithDetails[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<ProjectWithDetails[]>([]);
   const [activeFilter, setActiveFilter] = useState('Все проекты');
   const [categories, setCategories] = useState<string[]>(['Все проекты']);
   const [loading, setLoading] = useState(true);
@@ -59,7 +65,8 @@ const Projects = () => {
           // Find tags for this project
           const projectTags = projectTagsData
             .filter(pt => pt.project_id === project.id)
-            .map(pt => pt.tags.name);
+            .map(pt => pt.tags?.name)
+            .filter(Boolean) as string[];
           
           return {
             ...project,

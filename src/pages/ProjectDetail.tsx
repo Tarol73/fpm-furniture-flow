@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -28,6 +27,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Project } from '@/components/projects/ProjectCard';
+import { Database } from '@/integrations/supabase/types';
 
 interface ProjectPhoto {
   id: number;
@@ -90,7 +90,7 @@ const ProjectDetail = () => {
         const mainImage = mainPhoto ? mainPhoto.image_url : (photosData.length > 0 ? photosData[0].image_url : '/placeholder.svg');
         
         // Extract tags
-        const tags = tagsData.map(tag => tag.tags.name);
+        const tags = tagsData.map(tag => tag.tags?.name).filter(Boolean) as string[];
         
         const projectWithDetails: ExtendedProject = {
           ...projectData,
