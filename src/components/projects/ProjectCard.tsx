@@ -12,8 +12,8 @@ interface Project {
   location: string;
   year: string;
   description: string;
-  image: string;
-  tags: string[];
+  image?: string;
+  tags?: string[];
 }
 
 interface ProjectCardProps {
@@ -26,7 +26,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
       <Link to={`/projects/${project.id}`}>
         <div className="relative h-60 overflow-hidden">
           <img 
-            src={project.image} 
+            src={project.image || '/placeholder.svg'} 
             alt={project.title} 
             className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
           />
@@ -43,12 +43,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         <p className="text-gray-600 mb-4 font-light line-clamp-3">{project.description}</p>
         <div className="flex justify-between items-end">
           <div className="flex flex-wrap gap-2">
-            {project.tags.slice(0, 2).map((tag, index) => (
+            {project.tags && project.tags.slice(0, 2).map((tag, index) => (
               <Badge key={index} variant="outline" className="bg-gray-100 text-gray-700 hover:bg-gray-200 font-light">
                 {tag}
               </Badge>
             ))}
-            {project.tags.length > 2 && (
+            {project.tags && project.tags.length > 2 && (
               <Badge variant="outline" className="bg-gray-100 text-gray-700 hover:bg-gray-200 font-light">
                 +{project.tags.length - 2}
               </Badge>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -23,60 +24,183 @@ import { ArrowLeft, Calendar, MapPin, ChevronLeft, ChevronRight } from 'lucide-r
 import ContactDialog from '@/components/contact/ContactDialog';
 import ProjectGalleryImage from '@/components/project/ProjectGalleryImage';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-const projectsDetailData = [
-  {
-    id: 1,
-    title: 'Бизнес-центр "Горизонт"',
-    category: 'Офисное пространство',
-    location: 'Москва',
-    year: '2023',
-    description: 'Комплексное оснащение офисного пространства площадью 3500 м² с индивидуальными рабочими местами и зонами для коллективной работы. В рамках проекта была разработана концепция офисного пространства, отвечающая корпоративным ценностям компании и современным требованиям к эргономике рабочего места.',
-    fullDescription: 'Бизнес-центр "Горизонт" – это современный деловой комплекс класса А, расположенный в центральном деловом районе Москвы. Проект включал в себя полное оснащение шести этажей офисного здания, включая рецепцию, рабочие зоны открытого и закрытого типа, переговорные комнаты, зоны отдыха и коллективной работы.\n\nНаша команда провела детальный анализ потребностей заказчика, который хотел создать пространство, способствующее как эффективной индивидуальной работе, так и командному взаимодействию. Основываясь на этом анализе, мы разработали концепцию, совмещающую функциональность, эргономику и эстетику.\n\nОсобое внимание было уделено качеству и долговечности мебели. Для проекта были подобраны производители, специализирующиеся на офисной мебели высокого класса. Все рабочие места оснащены эргономичными креслами и столами с электрической регулировкой высоты, что позволяет сотрудникам чередовать работу сидя и стоя.\n\nВ переговорных комнатах установлены модульные столы, которые можно трансформировать под различные форматы встреч. Зоны отдыха оборудованы комфортной мягкой мебелью и акустическими панелями для снижения уровня шума.\n\nПроект был реализован в установленные сроки, несмотря на сложную логистику поставок от различных производителей. Наша команда обеспечила контроль качества на всех этапах, от производства до сборки и установки мебели.',
-    challenge: 'Основной сложностью проекта был сжатый график реализации – всего 3 месяца от проектирования до полной готовности пространства к эксплуатации. Кроме того, требовалось интегрировать существующие инженерные системы здания с новым офисным оснащением.',
-    solution: 'Мы разработали детальный план реализации с еженедельным контролем всех этапов. Для ускорения процесса были выбраны производители с готовыми складскими программами, что позволило сократить время на производство. Параллельно с поставками осуществлялся монтаж, благодаря чему удалось завершить проект в срок.',
-    results: 'Созданное офисное пространство полностью соответствует ожиданиям заказчика и получило высокую оценку сотрудников компании. Эргономичные рабочие места способствуют повышению производительности, а современный дизайн отражает инновационный характер бизнеса клиента.',
-    mainImage: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-    gallery: [
-      'https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-      'https://images.unsplash.com/photo-1604328698692-f76ea9498e76?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-      'https://images.unsplash.com/photo-1556761175-b413da4baf72?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-      'https://images.unsplash.com/photo-1568992687947-868a62a9f521?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-      'https://images.unsplash.com/photo-1577412647305-991150c7d163?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-      'https://images.unsplash.com/photo-1524758631624-e2822e304c36?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-    ],
-    tags: ['Офис', 'Мебель на заказ', 'Интеграция', 'Эргономика', 'Рабочие места'],
-    client: 'ООО "ТехноГоризонт"',
-    duration: '3 месяца',
-    area: '3500 м²',
-    budget: 'Конфиденциально',
-  },
-];
+interface ProjectTag {
+  name: string;
+}
+
+interface ProjectPhoto {
+  id: number;
+  project_id: number;
+  image_url: string;
+  is_main: boolean;
+  display_order: number;
+}
+
+interface Project {
+  id: number;
+  title: string;
+  category: string;
+  location: string;
+  year: string;
+  description: string;
+  full_description: string;
+  challenge: string;
+  solution: string;
+  results: string;
+  client: string;
+  duration: string;
+  area: string;
+  budget: string;
+  photos?: ProjectPhoto[];
+  tags?: string[];
+  mainImage?: string;
+}
 
 const ProjectDetail = () => {
   const { id } = useParams();
+  const [project, setProject] = useState<Project | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [relatedProjects, setRelatedProjects] = useState<Project[]>([]);
   const isMobile = useIsMobile();
   
-  const project = projectsDetailData.find(p => p.id === Number(id)) || projectsDetailData[0];
-  
-  if (!project) {
-    return <div>Проект не найден</div>;
-  }
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    
+    const fetchProjectDetails = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch the project
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (projectError) throw new Error('Проект не найден');
+        
+        // Fetch project photos
+        const { data: photosData, error: photosError } = await supabase
+          .from('project_photos')
+          .select('*')
+          .eq('project_id', id)
+          .order('display_order', { ascending: true });
+        
+        if (photosError) throw new Error('Не удалось загрузить фотографии проекта');
+        
+        // Fetch project tags
+        const { data: tagsData, error: tagsError } = await supabase
+          .from('project_tags')
+          .select('tags(name)')
+          .eq('project_id', id);
+        
+        if (tagsError) throw new Error('Не удалось загрузить теги проекта');
+        
+        // Extract the main image
+        const mainPhoto = photosData.find(photo => photo.is_main);
+        const mainImage = mainPhoto ? mainPhoto.image_url : (photosData.length > 0 ? photosData[0].image_url : '/placeholder.svg');
+        
+        // Extract tags
+        const tags = tagsData.map(tag => tag.tags.name);
+        
+        const projectWithDetails: Project = {
+          ...projectData,
+          photos: photosData,
+          tags: tags,
+          mainImage: mainImage
+        };
+        
+        setProject(projectWithDetails);
+        
+        // Fetch related projects (same category, excluding current)
+        const { data: relatedData, error: relatedError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('category', projectData.category)
+          .neq('id', id)
+          .limit(3);
+        
+        if (!relatedError && relatedData.length > 0) {
+          // Fetch main photos for related projects
+          const relatedIds = relatedData.map(p => p.id);
+          
+          const { data: relatedPhotos, error: relatedPhotosError } = await supabase
+            .from('project_photos')
+            .select('*')
+            .in('project_id', relatedIds)
+            .eq('is_main', true);
+          
+          const enhancedRelated = relatedData.map(relProj => {
+            const photo = relatedPhotos?.find(p => p.project_id === relProj.id);
+            return {
+              ...relProj,
+              mainImage: photo?.image_url || '/placeholder.svg'
+            };
+          });
+          
+          setRelatedProjects(enhancedRelated);
+        } else {
+          // If no related projects by category, get any 3 projects except current
+          const { data: anyRelated, error: anyRelatedError } = await supabase
+            .from('projects')
+            .select('*')
+            .neq('id', id)
+            .limit(3);
+            
+          if (!anyRelatedError && anyRelated.length > 0) {
+            const relatedIds = anyRelated.map(p => p.id);
+            
+            const { data: relatedPhotos } = await supabase
+              .from('project_photos')
+              .select('*')
+              .in('project_id', relatedIds)
+              .eq('is_main', true);
+            
+            const enhancedRelated = anyRelated.map(relProj => {
+              const photo = relatedPhotos?.find(p => p.project_id === relProj.id);
+              return {
+                ...relProj,
+                mainImage: photo?.image_url || '/placeholder.svg'
+              };
+            });
+            
+            setRelatedProjects(enhancedRelated);
+          }
+        }
+        
+      } catch (err) {
+        console.error('Error fetching project details:', err);
+        setError(err instanceof Error ? err.message : 'Произошла ошибка при загрузке данных');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (id) {
+      fetchProjectDetails();
+    }
+  }, [id]);
 
   const handleImageClick = (index: number | null) => {
     setSelectedImageIndex(index);
   };
 
   const handleNextImage = () => {
-    if (selectedImageIndex !== null) {
-      setSelectedImageIndex((selectedImageIndex + 1) % project.gallery.length);
+    if (selectedImageIndex !== null && project?.photos) {
+      setSelectedImageIndex((selectedImageIndex + 1) % project.photos.length);
     }
   };
 
   const handlePrevImage = () => {
-    if (selectedImageIndex !== null) {
-      setSelectedImageIndex((selectedImageIndex - 1 + project.gallery.length) % project.gallery.length);
+    if (selectedImageIndex !== null && project?.photos) {
+      setSelectedImageIndex((selectedImageIndex - 1 + project.photos.length) % project.photos.length);
     }
   };
 
@@ -88,9 +212,90 @@ const ProjectDetail = () => {
     document.dispatchEvent(new CustomEvent('open-contact-dialog'));
   };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  if (loading) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <main className="pt-24 pb-16">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center mb-8">
+              <Skeleton className="h-4 w-40 mr-2" />
+            </div>
+            <Skeleton className="h-12 w-3/4 mb-4" />
+            <div className="flex flex-wrap gap-6 mb-8">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-6 w-32" />
+            </div>
+            <Skeleton className="h-[60vh] w-full mb-12 rounded-lg" />
+            <Skeleton className="h-8 w-60 mb-6" />
+            <div className="grid grid-cols-4 gap-4 mb-16">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-40 w-full rounded-md" />
+              ))}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
+              <div className="lg:col-span-2">
+                <Skeleton className="h-8 w-40 mb-4" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4 mb-6" />
+                <Skeleton className="h-[400px] w-full rounded-md" />
+              </div>
+              <div className="lg:col-span-1">
+                <Skeleton className="h-[400px] w-full rounded-lg" />
+              </div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <main className="pt-24 pb-16">
+          <div className="container mx-auto px-4">
+            <div className="mb-8">
+              <Link to="/projects" className="inline-flex items-center text-fpm-teal hover:text-fpm-teal/80 transition-colors mb-6">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                <span>Вернуться ко всем проектам</span>
+              </Link>
+            </div>
+            <Alert variant="destructive" className="mb-6">
+              <AlertTitle>Ошибка при загрузке проекта</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <main className="pt-24 pb-16">
+          <div className="container mx-auto px-4">
+            <div className="mb-8">
+              <Link to="/projects" className="inline-flex items-center text-fpm-teal hover:text-fpm-teal/80 transition-colors mb-6">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                <span>Вернуться ко всем проектам</span>
+              </Link>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-light text-fpm-blue mb-8">Проект не найден</h1>
+            <p>Запрашиваемый проект не существует или был удален.</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -139,9 +344,9 @@ const ProjectDetail = () => {
               <DialogContent className="max-w-5xl w-full p-2 bg-black/90 border-none">
                 <DialogTitle className="sr-only">Просмотр изображения</DialogTitle>
                 <div className="relative">
-                  {selectedImageIndex !== null && (
+                  {selectedImageIndex !== null && project.photos && (
                     <img 
-                      src={project.gallery[selectedImageIndex]} 
+                      src={project.photos[selectedImageIndex].image_url} 
                       alt={`${project.title} - изображение ${selectedImageIndex + 1}`} 
                       className="w-full h-auto object-contain max-h-[80vh]"
                     />
@@ -165,28 +370,30 @@ const ProjectDetail = () => {
             </Dialog>
           </div>
           
-          <div className="mb-16">
-            <h2 className="text-2xl font-light text-fpm-blue mb-6">Галерея проекта</h2>
-            <Carousel className="w-full">
-              <CarouselContent>
-                {project.gallery.map((image, index) => (
-                  <CarouselItem key={index} className="basis-1/1 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                    <ProjectGalleryImage
-                      src={image}
-                      alt={`${project.title} - изображение ${index + 1}`}
-                      index={index}
-                      onClick={handleImageClick}
-                      selectedImageIndex={selectedImageIndex}
-                      onPrev={handlePrevImage}
-                      onNext={handleNextImage}
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
-          </div>
+          {project.photos && project.photos.length > 0 && (
+            <div className="mb-16">
+              <h2 className="text-2xl font-light text-fpm-blue mb-6">Галерея проекта</h2>
+              <Carousel className="w-full">
+                <CarouselContent>
+                  {project.photos.map((photo, index) => (
+                    <CarouselItem key={index} className="basis-1/1 sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                      <ProjectGalleryImage
+                        src={photo.image_url}
+                        alt={`${project.title} - изображение ${index + 1}`}
+                        index={index}
+                        onClick={handleImageClick}
+                        selectedImageIndex={selectedImageIndex}
+                        onPrev={handlePrevImage}
+                        onNext={handleNextImage}
+                      />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+              </Carousel>
+            </div>
+          )}
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
             <div className="lg:col-span-2">
@@ -195,7 +402,7 @@ const ProjectDetail = () => {
               
               <ScrollArea className="h-[400px] w-full rounded-md border p-6">
                 <div className="space-y-6">
-                  <p className="text-gray-700 font-light whitespace-pre-line">{project.fullDescription}</p>
+                  <p className="text-gray-700 font-light whitespace-pre-line">{project.full_description}</p>
                   
                   <h3 className="text-xl font-light text-fpm-blue mt-8">Вызов</h3>
                   <p className="text-gray-700 font-light">{project.challenge}</p>
@@ -234,16 +441,18 @@ const ProjectDetail = () => {
                     <p className="text-gray-700 font-light">{project.budget}</p>
                   </div>
                   
-                  <div>
-                    <h4 className="text-sm text-gray-500 font-light mb-2">Теги</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {project.tags.map((tag, index) => (
-                        <Badge key={index} variant="outline" className="bg-gray-100 text-gray-700 hover:bg-gray-200 font-light">
-                          {tag}
-                        </Badge>
-                      ))}
+                  {project.tags && project.tags.length > 0 && (
+                    <div>
+                      <h4 className="text-sm text-gray-500 font-light mb-2">Теги</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {project.tags.map((tag, index) => (
+                          <Badge key={index} variant="outline" className="bg-gray-100 text-gray-700 hover:bg-gray-200 font-light">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -263,32 +472,38 @@ const ProjectDetail = () => {
             </Button>
           </div>
           
-          <div className="mb-16">
-            <h2 className="text-2xl font-light text-fpm-blue mb-6">Похожие проекты</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {projectsDetailData.slice(0, 3).map((relatedProject) => (
-                <div key={relatedProject.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                  <img 
-                    src={relatedProject.mainImage} 
-                    alt={relatedProject.title} 
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="font-light text-lg mb-2">{relatedProject.title}</h3>
-                    <p className="text-gray-600 text-sm mb-3 font-light">{relatedProject.category}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500 font-light">{relatedProject.location}</span>
+          {relatedProjects.length > 0 && (
+            <div className="mb-16">
+              <h2 className="text-2xl font-light text-fpm-blue mb-6">Похожие проекты</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {relatedProjects.map((relatedProject) => (
+                  <div key={relatedProject.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <Link to={`/projects/${relatedProject.id}`}>
+                      <img 
+                        src={relatedProject.mainImage} 
+                        alt={relatedProject.title} 
+                        className="w-full h-48 object-cover"
+                      />
+                    </Link>
+                    <div className="p-4">
                       <Link to={`/projects/${relatedProject.id}`}>
-                        <Button variant="ghost" size="sm" className="text-fpm-teal hover:text-fpm-teal/80 p-0">
-                          Подробнее
-                        </Button>
+                        <h3 className="font-light text-lg mb-2">{relatedProject.title}</h3>
                       </Link>
+                      <p className="text-gray-600 text-sm mb-3 font-light">{relatedProject.category}</p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500 font-light">{relatedProject.location}</span>
+                        <Link to={`/projects/${relatedProject.id}`}>
+                          <Button variant="ghost" size="sm" className="text-fpm-teal hover:text-fpm-teal/80 p-0">
+                            Подробнее
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
       <Footer />

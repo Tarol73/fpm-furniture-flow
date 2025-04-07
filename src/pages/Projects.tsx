@@ -1,88 +1,107 @@
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { ProjectFilter } from '@/components/projects/ProjectFilter';
 import ContactDialog from '@/components/contact/ContactDialog';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-// Sample project data
-const projectsData = [
-  {
-    id: 1,
-    title: 'Бизнес-центр "Горизонт"',
-    category: 'Офисное пространство',
-    location: 'Москва',
-    year: '2023',
-    description: 'Комплексное оснащение офисного пространства площадью 3500 м² с индивидуальными рабочими местами и зонами для коллективной работы.',
-    image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-    tags: ['Офис', 'Мебель на заказ', 'Интеграция']
-  },
-  {
-    id: 2,
-    title: 'Ресторан "Морской бриз"',
-    category: 'Ресторан',
-    location: 'Санкт-Петербург',
-    year: '2022',
-    description: 'Проектирование и производство эксклюзивной мебели для ресторана в морском стиле. Уникальные решения для интерьера с высокой проходимостью.',
-    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-    tags: ['Ресторан', 'Премиум', 'Дизайнерская мебель']
-  },
-  {
-    id: 3,
-    title: 'Отель "Панорама"',
-    category: 'Гостиничный комплекс',
-    location: 'Сочи',
-    year: '2023',
-    description: 'Комплексное оснащение номерного фонда и общественных зон пятизвездочного отеля. Поставка и монтаж мебели, декоративных панелей и элементов интерьера.',
-    image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-    tags: ['Отель', 'Люкс', 'Комплексное оснащение']
-  },
-  {
-    id: 4,
-    title: 'ТРЦ "Меридиан"',
-    category: 'Торговый центр',
-    location: 'Казань',
-    year: '2022',
-    description: 'Создание мебельного оснащения для зон отдыха и фудкорта крупного торгового центра. Разработка и реализация интерьерных решений для коммерческих помещений.',
-    image: 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-    tags: ['Торговый центр', 'Массовый сегмент', 'Зоны отдыха']
-  },
-  {
-    id: 5,
-    title: 'Коворкинг "Импульс"',
-    category: 'Коворкинг',
-    location: 'Екатеринбург',
-    year: '2023',
-    description: 'Разработка и реализация креативных пространств для совместной работы. Мебель с учетом эргономики и повышенной функциональности.',
-    image: 'https://images.unsplash.com/photo-1527192491265-7e15c55b1ed2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-    tags: ['Коворкинг', 'Современный дизайн', 'Эргономика']
-  },
-  {
-    id: 6,
-    title: 'Медицинский центр "Здоровье"',
-    category: 'Медицинское учреждение',
-    location: 'Новосибирск',
-    year: '2022',
-    description: 'Комплексное оснащение клиники с учетом специфических требований медицинских учреждений. Мебель, соответствующая санитарным нормам и требованиям безопасности.',
-    image: 'https://images.unsplash.com/photo-1504439468489-c8920d796a29?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80',
-    tags: ['Медицина', 'Специализированная мебель', 'Безопасность']
-  }
-];
+// Define the Project interface based on our database schema
+interface Project {
+  id: number;
+  title: string;
+  category: string;
+  location: string;
+  year: string;
+  description: string;
+  image?: string; // Main image URL
+  tags?: string[]; // Tags for the project
+}
 
 const Projects = () => {
-  const [filteredProjects, setFilteredProjects] = React.useState(projectsData);
-  const [activeFilter, setActiveFilter] = React.useState('Все проекты');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [activeFilter, setActiveFilter] = useState('Все проекты');
+  const [categories, setCategories] = useState<string[]>(['Все проекты']);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Fetch projects, their main photos, and tags from Supabase
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Get all projects
+        const { data: projectsData, error: projectsError } = await supabase
+          .from('projects')
+          .select('*');
+        
+        if (projectsError) throw new Error('Не удалось загрузить проекты');
+        
+        // Get all photos and filter for main photos
+        const { data: photosData, error: photosError } = await supabase
+          .from('project_photos')
+          .select('*')
+          .eq('is_main', true);
+        
+        if (photosError) throw new Error('Не удалось загрузить фотографии проектов');
+        
+        // Get all project tags
+        const { data: projectTagsData, error: projectTagsError } = await supabase
+          .from('project_tags')
+          .select('project_id, tags(name)');
+        
+        if (projectTagsError) throw new Error('Не удалось загрузить теги проектов');
+        
+        // Get all categories
+        const uniqueCategories = Array.from(new Set(projectsData.map(project => project.category)));
+        setCategories(['Все проекты', ...uniqueCategories]);
+        
+        // Combine the data
+        const projectsWithDetails = projectsData.map(project => {
+          // Find main photo for this project
+          const mainPhoto = photosData.find(photo => photo.project_id === project.id);
+          
+          // Find tags for this project
+          const projectTags = projectTagsData
+            .filter(pt => pt.project_id === project.id)
+            .map(pt => pt.tags.name);
+          
+          return {
+            ...project,
+            image: mainPhoto?.image_url,
+            tags: projectTags
+          };
+        });
+        
+        setProjects(projectsWithDetails);
+        setFilteredProjects(projectsWithDetails);
+        
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setError(err instanceof Error ? err.message : 'Произошла ошибка при загрузке данных');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchProjects();
+  }, []);
 
   const handleFilterChange = (category: string) => {
     setActiveFilter(category);
     if (category === 'Все проекты') {
-      setFilteredProjects(projectsData);
+      setFilteredProjects(projects);
     } else {
-      setFilteredProjects(projectsData.filter(project => project.category === category));
+      setFilteredProjects(projects.filter(project => project.category === category));
     }
   };
-
-  const categories = ['Все проекты', ...Array.from(new Set(projectsData.map(project => project.category)))];
 
   // Function to trigger the contact dialog
   const handleContactClick = () => {
@@ -109,11 +128,36 @@ const Projects = () => {
             onFilterChange={handleFilterChange} 
           />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
-            {filteredProjects.map(project => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Ошибка</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="flex flex-col space-y-3">
+                  <Skeleton className="h-60 w-full rounded-md" />
+                  <Skeleton className="h-6 w-3/4 rounded-md" />
+                  <Skeleton className="h-4 w-1/2 rounded-md" />
+                  <Skeleton className="h-20 w-full rounded-md" />
+                  <div className="flex space-x-2">
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
+              {filteredProjects.map(project => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+            </div>
+          )}
           
           <div className="mt-16 text-center">
             <p className="text-lg text-gray-600 mb-6 font-light">
