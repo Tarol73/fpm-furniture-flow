@@ -1,6 +1,12 @@
 
 import React from 'react';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem, 
+  CarouselNext, 
+  CarouselPrevious 
+} from '@/components/ui/carousel';
 import { ProjectPhoto } from '@/types/project';
 import ProjectGalleryImage from './ProjectGalleryImage';
 
