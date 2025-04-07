@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '@/components/layout/Navbar';
@@ -59,11 +60,22 @@ const ProjectDetail = () => {
         setLoading(true);
         setError(null);
         
+        if (!id) {
+          throw new Error('Проект не найден');
+        }
+        
+        // Convert ID to a number since Supabase expects numeric IDs
+        const projectId = parseInt(id, 10);
+        
+        if (isNaN(projectId)) {
+          throw new Error('Некорректный ID проекта');
+        }
+        
         // Fetch the project
         const { data: projectData, error: projectError } = await supabase
           .from('projects')
           .select('*')
-          .eq('id', id)
+          .eq('id', projectId)
           .single();
         
         if (projectError) throw new Error('Проект не найден');
@@ -72,7 +84,7 @@ const ProjectDetail = () => {
         const { data: photosData, error: photosError } = await supabase
           .from('project_photos')
           .select('*')
-          .eq('project_id', id)
+          .eq('project_id', projectId)
           .order('display_order', { ascending: true });
         
         if (photosError) throw new Error('Не удалось загрузить фотографии проекта');
@@ -81,7 +93,7 @@ const ProjectDetail = () => {
         const { data: tagsData, error: tagsError } = await supabase
           .from('project_tags')
           .select('tags(name)')
-          .eq('project_id', id);
+          .eq('project_id', projectId);
         
         if (tagsError) throw new Error('Не удалось загрузить теги проекта');
         
@@ -107,7 +119,7 @@ const ProjectDetail = () => {
             .from('projects')
             .select('*')
             .eq('category', projectData.category)
-            .neq('id', id)
+            .neq('id', projectId)
             .limit(3);
           
           if (!relatedError && relatedData && relatedData.length > 0) {
@@ -134,7 +146,7 @@ const ProjectDetail = () => {
             const { data: anyRelated, error: anyRelatedError } = await supabase
               .from('projects')
               .select('*')
-              .neq('id', id)
+              .neq('id', projectId)
               .limit(3);
               
             if (!anyRelatedError && anyRelated && anyRelated.length > 0) {
