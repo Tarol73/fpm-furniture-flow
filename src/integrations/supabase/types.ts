@@ -131,6 +131,7 @@ export type Database = {
           client: string | null
           created_at: string | null
           description: string
+          display_order: number
           duration: string | null
           full_description: string | null
           id: number
@@ -149,6 +150,7 @@ export type Database = {
           client?: string | null
           created_at?: string | null
           description: string
+          display_order: number
           duration?: string | null
           full_description?: string | null
           id?: number
@@ -167,6 +169,7 @@ export type Database = {
           client?: string | null
           created_at?: string | null
           description?: string
+          display_order?: number
           duration?: string | null
           full_description?: string | null
           id?: number

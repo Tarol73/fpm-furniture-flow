@@ -15,15 +15,19 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit2, Plus, Trash2 } from 'lucide-react';
+import { Edit2, Plus, Trash2, Search, ArrowUp, ArrowDown, Save } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 
 const AdminProjects = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [projects, setProjects] = useState<(ExtendedProject & { categories?: Category[] })[]>([]);
+  const [displayedProjects, setDisplayedProjects] = useState<(ExtendedProject & { categories?: Category[] })[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [orderChanged, setOrderChanged] = useState(false);
 
   useEffect(() => {
     // Check authentication
@@ -41,11 +45,11 @@ const AdminProjects = () => {
     try {
       setLoading(true);
       
-      // Fetch projects from Supabase
+      // Fetch projects from Supabase ordered by display_order
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
         .select('*')
-        .order('id', { ascending: false });
+        .order('display_order', { ascending: true });
       
       if (projectsError) {
         throw projectsError;
@@ -88,6 +92,8 @@ const AdminProjects = () => {
       );
       
       setProjects(projectsWithImages);
+      setDisplayedProjects(projectsWithImages);
+      setOrderChanged(false);
     } catch (error) {
       console.error('Error fetching projects:', error);
       toast({
@@ -130,6 +136,14 @@ const AdminProjects = () => {
       
       if (tagsError) throw tagsError;
       
+      // Delete project categories
+      const { error: categoriesError } = await supabase
+        .from('project_categories')
+        .delete()
+        .eq('project_id', projectId);
+        
+      if (categoriesError) throw categoriesError;
+      
       // Delete the project
       const { error: projectError } = await supabase
         .from('projects')
@@ -139,7 +153,9 @@ const AdminProjects = () => {
       if (projectError) throw projectError;
       
       // Update local state
-      setProjects(projects.filter(project => project.id !== projectId));
+      const updatedProjects = projects.filter(project => project.id !== projectId);
+      setProjects(updatedProjects);
+      setDisplayedProjects(updatedProjects);
       
       toast({
         title: "Успех",
@@ -156,6 +172,80 @@ const AdminProjects = () => {
     }
   };
 
+  // Search functionality
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+    
+    if (!query) {
+      setDisplayedProjects(projects);
+      return;
+    }
+    
+    const filtered = projects.filter(project => 
+      project.title.toLowerCase().includes(query) || 
+      project.location.toLowerCase().includes(query) || 
+      project.category.toLowerCase().includes(query) ||
+      project.categories?.some(cat => cat.name.toLowerCase().includes(query))
+    );
+    
+    setDisplayedProjects(filtered);
+  };
+
+  // Move project up in order
+  const moveProjectUp = (index: number) => {
+    if (index === 0) return; // Already at the top
+    
+    const newProjects = [...displayedProjects];
+    [newProjects[index - 1], newProjects[index]] = [newProjects[index], newProjects[index - 1]];
+    setDisplayedProjects(newProjects);
+    setOrderChanged(true);
+  };
+
+  // Move project down in order
+  const moveProjectDown = (index: number) => {
+    if (index === displayedProjects.length - 1) return; // Already at the bottom
+    
+    const newProjects = [...displayedProjects];
+    [newProjects[index], newProjects[index + 1]] = [newProjects[index + 1], newProjects[index]];
+    setDisplayedProjects(newProjects);
+    setOrderChanged(true);
+  };
+
+  // Save the new order to the database
+  const saveNewOrder = async () => {
+    try {
+      setLoading(true);
+      
+      // Update each project with its new display_order
+      const updates = displayedProjects.map((project, index) => {
+        return supabase
+          .from('projects')
+          .update({ display_order: index + 1 })
+          .eq('id', project.id);
+      });
+      
+      await Promise.all(updates);
+      
+      toast({
+        title: "Успех",
+        description: "Порядок проектов успешно обновлен",
+        variant: "default",
+      });
+      
+      setOrderChanged(false);
+    } catch (error) {
+      console.error('Error updating project order:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить порядок проектов",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -165,29 +255,55 @@ const AdminProjects = () => {
       <div>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-light text-fpm-blue">Управление проектами</h2>
-          <Button 
-            onClick={handleCreateProject}
-            className="bg-fpm-teal hover:bg-fpm-teal/90 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Создать проект
-          </Button>
+          <div className="flex gap-2">
+            {orderChanged && (
+              <Button 
+                onClick={saveNewOrder}
+                className="bg-fpm-orange hover:bg-fpm-orange/90 text-white"
+                disabled={loading}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Сохранить порядок
+              </Button>
+            )}
+            <Button 
+              onClick={handleCreateProject}
+              className="bg-fpm-teal hover:bg-fpm-teal/90 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Создать проект
+            </Button>
+          </div>
+        </div>
+
+        {/* Search input */}
+        <div className="mb-6 relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Поиск по названию, локации или категории"
+              value={searchQuery}
+              onChange={handleSearch}
+              className="pl-10"
+            />
+          </div>
         </div>
         
-        {loading ? (
+        {loading && !orderChanged ? (
           <div className="text-center py-8">
             <p>Загрузка проектов...</p>
           </div>
-        ) : projects.length === 0 ? (
+        ) : displayedProjects.length === 0 ? (
           <div className="text-center py-8 bg-gray-50 rounded-lg">
-            <p className="text-gray-500">Проекты не найдены. Создайте новый проект.</p>
+            <p className="text-gray-500">Проекты не найдены. Создайте новый проект или измените условия поиска.</p>
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[100px]">ID</TableHead>
+                  <TableHead className="w-[80px]">Порядок</TableHead>
+                  <TableHead className="w-[80px]">ID</TableHead>
                   <TableHead className="w-[80px]">Фото</TableHead>
                   <TableHead>Название</TableHead>
                   <TableHead>Категории</TableHead>
@@ -197,8 +313,31 @@ const AdminProjects = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {projects.map((project) => (
+                {displayedProjects.map((project, index) => (
                   <TableRow key={project.id}>
+                    <TableCell>
+                      <div className="flex flex-col items-center space-y-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => moveProjectUp(index)}
+                          disabled={index === 0}
+                          className="h-6 w-6 p-0"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <span className="text-sm">{index + 1}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => moveProjectDown(index)}
+                          disabled={index === displayedProjects.length - 1}
+                          className="h-6 w-6 p-0"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell className="font-medium">{project.id}</TableCell>
                     <TableCell>
                       <div className="h-12 w-12 rounded overflow-hidden bg-gray-100">
