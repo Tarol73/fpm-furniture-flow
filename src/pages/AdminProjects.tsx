@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,6 +28,7 @@ const AdminProjects = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [orderChanged, setOrderChanged] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
 
   useEffect(() => {
     const authStatus = localStorage.getItem('isAuthenticated');
@@ -200,16 +202,28 @@ const AdminProjects = () => {
 
   const saveNewOrder = async () => {
     try {
-      setLoading(true);
+      setSavingOrder(true);
       
-      const updates = displayedProjects.map((project, index) => {
+      // Create an array of promises for each update operation
+      const updatePromises = displayedProjects.map((project, index) => {
         return supabase
           .from('projects')
           .update({ display_order: index + 1 })
           .eq('id', project.id);
       });
       
-      await Promise.all(updates);
+      // Execute all update operations in parallel
+      const results = await Promise.all(updatePromises);
+      
+      // Check if any errors occurred
+      const errors = results.filter(result => result.error);
+      if (errors.length > 0) {
+        console.error('Errors updating project order:', errors);
+        throw new Error('Some projects could not be updated');
+      }
+      
+      // Update the local projects state with the new order
+      setProjects([...displayedProjects]);
       
       toast({
         title: "Успех",
@@ -226,7 +240,7 @@ const AdminProjects = () => {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setSavingOrder(false);
     }
   };
 
@@ -244,10 +258,10 @@ const AdminProjects = () => {
               <Button 
                 onClick={saveNewOrder}
                 className="bg-fpm-orange hover:bg-fpm-orange/90 text-white"
-                disabled={loading}
+                disabled={savingOrder}
               >
                 <Save className="w-4 h-4 mr-2" />
-                Сохранить порядок
+                {savingOrder ? 'Сохранение...' : 'Сохранить порядок'}
               </Button>
             )}
             <Button 
@@ -272,7 +286,7 @@ const AdminProjects = () => {
           </div>
         </div>
         
-        {loading && !orderChanged ? (
+        {loading && !savingOrder && !orderChanged ? (
           <div className="text-center py-8">
             <p>Загрузка проектов...</p>
           </div>
@@ -304,7 +318,7 @@ const AdminProjects = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => moveProjectUp(index)}
-                          disabled={index === 0}
+                          disabled={index === 0 || savingOrder}
                           className="h-6 w-6 p-0"
                         >
                           <ArrowUp className="h-4 w-4" />
@@ -314,7 +328,7 @@ const AdminProjects = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => moveProjectDown(index)}
-                          disabled={index === displayedProjects.length - 1}
+                          disabled={index === displayedProjects.length - 1 || savingOrder}
                           className="h-6 w-6 p-0"
                         >
                           <ArrowDown className="h-4 w-4" />
@@ -353,6 +367,7 @@ const AdminProjects = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => handleEditProject(project.id)}
+                          disabled={savingOrder}
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
@@ -360,6 +375,7 @@ const AdminProjects = () => {
                           variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteProject(project.id)}
+                          disabled={savingOrder}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
