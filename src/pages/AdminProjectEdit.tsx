@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,6 +39,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from "@/components/ui/checkbox";
 
 const projectSchema = z.object({
   title: z.string().min(1, 'Название проекта обязательно'),
@@ -66,6 +68,8 @@ const AdminProjectEdit = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [savingPhotos, setSavingPhotos] = useState(false);
+  const [photosChanged, setPhotosChanged] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const isNew = id === 'new';
@@ -126,7 +130,15 @@ const AdminProjectEdit = () => {
       if (photosError) throw photosError;
       
       setProject(projectData);
-      setPhotos(photosData || []);
+      
+      // Sort photos: main photo first, then by display_order
+      const sortedPhotos = [...(photosData || [])].sort((a, b) => {
+        if (a.is_main && !b.is_main) return -1;
+        if (!a.is_main && b.is_main) return 1;
+        return a.display_order - b.display_order;
+      });
+      
+      setPhotos(sortedPhotos);
       
       Object.keys(projectData).forEach((key) => {
         if (form.getValues(key as keyof ProjectFormValues) !== undefined) {
@@ -267,7 +279,14 @@ const AdminProjectEdit = () => {
         
         if (photoError) throw photoError;
         
-        setPhotos(prev => [...prev, photoData]);
+        // Add the new photo to the list and re-sort
+        const updatedPhotos = [...photos, photoData].sort((a, b) => {
+          if (a.is_main && !b.is_main) return -1;
+          if (!a.is_main && b.is_main) return 1;
+          return a.display_order - b.display_order;
+        });
+        
+        setPhotos(updatedPhotos);
       }
       
       toast({
@@ -308,7 +327,10 @@ const AdminProjectEdit = () => {
       if (deleteError) throw deleteError;
       
       if (photoToDelete.is_main && photos.length > 1) {
-        const newMainPhoto = photos.find(p => p.id !== photoId);
+        // If we deleted the main photo, make another one the main
+        const newPhotos = photos.filter(p => p.id !== photoId);
+        const newMainPhoto = newPhotos[0]; // First photo becomes main
+        
         if (newMainPhoto) {
           const { error: updateError } = await supabase
             .from('project_photos')
@@ -316,10 +338,16 @@ const AdminProjectEdit = () => {
             .eq('id', newMainPhoto.id);
           
           if (updateError) throw updateError;
+          
+          // Update the photos state
+          newPhotos[0] = { ...newMainPhoto, is_main: true };
         }
+        
+        setPhotos(newPhotos);
+      } else {
+        // Just remove the photo
+        setPhotos(prev => prev.filter(p => p.id !== photoId));
       }
-      
-      setPhotos(prev => prev.filter(p => p.id !== photoId));
       
       toast({
         title: "Успех",
@@ -339,30 +367,29 @@ const AdminProjectEdit = () => {
 
   const handleSetMainPhoto = async (photoId: number) => {
     try {
-      const { error: updateAllError } = await supabase
-        .from('project_photos')
-        .update({ is_main: false })
-        .eq('project_id', Number(id));
+      // Find the photo and update its state locally first
+      const photoIndex = photos.findIndex(p => p.id === photoId);
+      if (photoIndex === -1) return;
       
-      if (updateAllError) throw updateAllError;
+      // If it's already the main photo, do nothing
+      if (photos[photoIndex].is_main) return;
       
-      const { error: updateMainError } = await supabase
-        .from('project_photos')
-        .update({ is_main: true })
-        .eq('id', photoId);
+      // Create a new array with the selected photo marked as main and moved to the top
+      const updatedPhotos = [...photos];
       
-      if (updateMainError) throw updateMainError;
+      // Set all photos to not main
+      updatedPhotos.forEach(p => p.is_main = false);
       
-      setPhotos(prev => prev.map(p => ({
-        ...p,
-        is_main: p.id === photoId
-      })));
+      // Set the selected photo as main
+      updatedPhotos[photoIndex].is_main = true;
       
-      toast({
-        title: "Успех",
-        description: "Главная фотография обновлена",
-        variant: "default",
-      });
+      // Move the main photo to the top of the list
+      const mainPhoto = updatedPhotos.splice(photoIndex, 1)[0];
+      updatedPhotos.unshift(mainPhoto);
+      
+      // Update state and mark as changed (don't save to DB yet)
+      setPhotos(updatedPhotos);
+      setPhotosChanged(true);
       
     } catch (error) {
       console.error('Error setting main photo:', error);
@@ -374,41 +401,35 @@ const AdminProjectEdit = () => {
     }
   };
 
-  const handleMovePhoto = async (photoId: number, direction: 'up' | 'down') => {
+  const handleMovePhoto = (photoId: number, direction: 'up' | 'down') => {
     try {
       const photoIndex = photos.findIndex(p => p.id === photoId);
       if (photoIndex === -1) return;
       
-      if (
-        (direction === 'up' && photoIndex === 0) || 
-        (direction === 'down' && photoIndex === photos.length - 1)
-      ) {
-        return;
-      }
+      // Can't move the main photo from the top position
+      if (photos[photoIndex].is_main && direction === 'up') return;
+      
+      // Can't move up if it's already the first non-main photo
+      if (direction === 'up' && photoIndex === (photos[0].is_main ? 1 : 0)) return;
+      
+      // Can't move down if it's already the last photo
+      if (direction === 'down' && photoIndex === photos.length - 1) return;
       
       const swapIndex = direction === 'up' ? photoIndex - 1 : photoIndex + 1;
-      const currentPhoto = photos[photoIndex];
-      const swapPhoto = photos[swapIndex];
       
-      const { error: updateCurrentError } = await supabase
-        .from('project_photos')
-        .update({ display_order: swapPhoto.display_order })
-        .eq('id', currentPhoto.id);
+      // Never swap with the main photo (which is always at index 0)
+      if (swapIndex === 0 && photos[0].is_main && direction === 'up') return;
       
-      if (updateCurrentError) throw updateCurrentError;
+      // Create a new array with the photos in the new order
+      const updatedPhotos = [...photos];
       
-      const { error: updateSwapError } = await supabase
-        .from('project_photos')
-        .update({ display_order: currentPhoto.display_order })
-        .eq('id', swapPhoto.id);
+      // Swap the photos
+      [updatedPhotos[photoIndex], updatedPhotos[swapIndex]] = 
+      [updatedPhotos[swapIndex], updatedPhotos[photoIndex]];
       
-      if (updateSwapError) throw updateSwapError;
-      
-      const newPhotos = [...photos];
-      newPhotos[photoIndex] = { ...currentPhoto, display_order: swapPhoto.display_order };
-      newPhotos[swapIndex] = { ...swapPhoto, display_order: currentPhoto.display_order };
-      newPhotos.sort((a, b) => a.display_order - b.display_order);
-      setPhotos(newPhotos);
+      // Update state and mark as changed (don't save to DB yet)
+      setPhotos(updatedPhotos);
+      setPhotosChanged(true);
       
     } catch (error) {
       console.error('Error moving photo:', error);
@@ -417,6 +438,45 @@ const AdminProjectEdit = () => {
         description: "Не удалось изменить порядок фотографий",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleSavePhotos = async () => {
+    try {
+      setSavingPhotos(true);
+      
+      // Update display_order for all photos
+      for (let i = 0; i < photos.length; i++) {
+        const photo = photos[i];
+        
+        const { error: updateError } = await supabase
+          .from('project_photos')
+          .update({ 
+            display_order: i + 1,
+            is_main: photo.is_main
+          })
+          .eq('id', photo.id);
+        
+        if (updateError) throw updateError;
+      }
+      
+      setPhotosChanged(false);
+      
+      toast({
+        title: "Успех",
+        description: "Порядок и настройки фотографий сохранены",
+        variant: "default",
+      });
+      
+    } catch (error) {
+      console.error('Error saving photo order:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось сохранить порядок фотографий",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingPhotos(false);
     }
   };
 
@@ -696,7 +756,7 @@ const AdminProjectEdit = () => {
                     </div>
                   ) : (
                     <>
-                      <div className="mb-6">
+                      <div className="mb-4">
                         <input 
                           type="file" 
                           accept="image/*" 
@@ -711,11 +771,24 @@ const AdminProjectEdit = () => {
                           variant="outline"
                           onClick={() => fileInputRef.current?.click()}
                           disabled={uploading}
-                          className="w-full"
+                          className="w-full mb-2"
                         >
                           <Image className="mr-2 h-4 w-4" />
                           {uploading ? 'Загрузка...' : 'Добавить фотографии'}
                         </Button>
+                        
+                        {photosChanged && (
+                          <Button
+                            type="button"
+                            variant="default"
+                            onClick={handleSavePhotos}
+                            disabled={savingPhotos}
+                            className="w-full bg-fpm-teal hover:bg-fpm-teal/90 text-white"
+                          >
+                            <Save className="mr-2 h-4 w-4" />
+                            {savingPhotos ? 'Сохранение...' : 'Сохранить изменения фото'}
+                          </Button>
+                        )}
                       </div>
                       
                       {photos.length === 0 ? (
@@ -739,30 +812,31 @@ const AdminProjectEdit = () => {
                                   <div className="flex flex-col gap-1 text-sm">
                                     <div className="flex justify-between">
                                       <span className="font-medium">Фото {index + 1}</span>
-                                      {photo.is_main && (
-                                        <span className="text-fpm-teal flex items-center text-xs">
-                                          <Check className="h-3 w-3 mr-1" /> Главное
-                                        </span>
-                                      )}
+                                      <div className="flex items-center">
+                                        <Checkbox 
+                                          id={`main-${photo.id}`}
+                                          checked={photo.is_main}
+                                          onCheckedChange={() => handleSetMainPhoto(photo.id)}
+                                          className="mr-2 data-[state=checked]:bg-fpm-teal border-fpm-teal"
+                                        />
+                                        <label 
+                                          htmlFor={`main-${photo.id}`}
+                                          className={`text-xs ${photo.is_main ? 'text-fpm-teal' : 'text-gray-500'}`}
+                                        >
+                                          Главное
+                                        </label>
+                                      </div>
                                     </div>
                                     
                                     <div className="flex flex-wrap gap-1 mt-2">
-                                      {!photo.is_main && (
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => handleSetMainPhoto(photo.id)}
-                                          className="h-7 px-2 text-xs"
-                                        >
-                                          Главное
-                                        </Button>
-                                      )}
-                                      
                                       <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleMovePhoto(photo.id, 'up')}
-                                        disabled={index === 0}
+                                        disabled={
+                                          (photo.is_main) || 
+                                          (index === (photos[0].is_main ? 1 : 0))
+                                        }
                                         className="h-7 w-7 p-0"
                                       >
                                         <ArrowUp className="h-3 w-3" />
