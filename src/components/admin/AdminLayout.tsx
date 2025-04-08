@@ -10,7 +10,7 @@ import {
   SidebarMenuButton, 
   SidebarProvider
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, Settings, FolderKanban, LogOut } from 'lucide-react';
+import { LayoutDashboard, Settings, FolderKanban, LogOut, HomeIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
@@ -71,6 +71,19 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   <div className="flex items-center">
                     <FolderKanban className="mr-2 h-5 w-5" />
                     <span>Управление проектами</span>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild 
+                  tooltip="Перейти на сайт"
+                  onClick={() => window.open('/', '_blank')}
+                >
+                  <div className="flex items-center">
+                    <HomeIcon className="mr-2 h-5 w-5" />
+                    <span>Перейти на сайт</span>
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
