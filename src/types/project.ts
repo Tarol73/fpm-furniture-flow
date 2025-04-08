@@ -32,6 +32,7 @@ export interface ExtendedProject {
   budget?: string;
   created_at?: string;
   updated_at?: string;
+  display_order?: number;
   photos?: ProjectPhoto[];
   tags?: string[];
   mainImage?: string;
