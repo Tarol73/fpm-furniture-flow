@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -188,7 +187,7 @@ const AdminProjects = () => {
     const newProjects = [...displayedProjects];
     [newProjects[index - 1], newProjects[index]] = [newProjects[index], newProjects[index - 1]];
     setDisplayedProjects(newProjects);
-    setOrderChanged(true);
+    setOrderChanged(true); // Explicitly set to true when order changes
   };
 
   const moveProjectDown = (index: number) => {
@@ -197,7 +196,7 @@ const AdminProjects = () => {
     const newProjects = [...displayedProjects];
     [newProjects[index], newProjects[index + 1]] = [newProjects[index + 1], newProjects[index]];
     setDisplayedProjects(newProjects);
-    setOrderChanged(true);
+    setOrderChanged(true); // Explicitly set to true when order changes
   };
 
   const saveNewOrder = async () => {
@@ -257,7 +256,7 @@ const AdminProjects = () => {
             {orderChanged && (
               <Button 
                 onClick={saveNewOrder}
-                className="bg-fpm-orange hover:bg-fpm-orange/90 text-white"
+                className="bg-fpm-purple hover:bg-fpm-purple/90 text-white"
                 disabled={savingOrder}
               >
                 <Save className="w-4 h-4 mr-2" />
