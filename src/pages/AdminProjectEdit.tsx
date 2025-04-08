@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -151,10 +152,29 @@ const AdminProjectEdit = () => {
     try {
       setSaving(true);
       
+      // Ensure values match the required schema for Supabase
+      // This satisfies the type requirements for category, description, location, title and year
+      const projectData = {
+        title: values.title,
+        description: values.description,
+        category: values.category,
+        location: values.location,
+        year: values.year,
+        // Optional fields
+        full_description: values.full_description,
+        area: values.area,
+        budget: values.budget,
+        challenge: values.challenge,
+        solution: values.solution,
+        results: values.results,
+        client: values.client,
+        duration: values.duration,
+      };
+      
       if (isNew) {
         const { data: newProject, error: createError } = await supabase
           .from('projects')
-          .insert(values)
+          .insert(projectData)
           .select()
           .single();
         
@@ -170,7 +190,7 @@ const AdminProjectEdit = () => {
       } else {
         const { error: updateError } = await supabase
           .from('projects')
-          .update(values)
+          .update(projectData)
           .eq('id', Number(id));
         
         if (updateError) throw updateError;
@@ -183,7 +203,7 @@ const AdminProjectEdit = () => {
         
         setProject({
           ...project!,
-          ...values
+          ...projectData
         });
       }
     } catch (error) {
