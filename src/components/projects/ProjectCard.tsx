@@ -49,11 +49,19 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           </Link>
           <span className="text-sm text-gray-500 font-light">{project.year}</span>
         </div>
-        <p className="text-sm text-gray-500 mb-3 font-light">
-          {project.location} • {project.categories && project.categories.length > 0 
-            ? project.categories[0].name 
-            : project.category}
-        </p>
+        <div className="flex flex-col gap-2 mb-3">
+          <p className="text-sm text-gray-500 font-light">{project.location}</p>
+          <div className="flex flex-wrap gap-1">
+            {project.categories && project.categories.length > 0 
+              ? project.categories.map((category, index) => (
+                <span key={category.id} className="text-sm text-gray-500 font-light">
+                  {index > 0 ? ' • ' : ''}{category.name}
+                </span>
+              ))
+              : <span className="text-sm text-gray-500 font-light">{project.category}</span>
+            }
+          </div>
+        </div>
         <p className="text-gray-600 mb-4 font-light line-clamp-3">{project.description}</p>
         <div className="flex justify-between items-end">
           <div className="flex flex-wrap gap-2">
