@@ -238,6 +238,24 @@ const AdminProjectEdit = () => {
     try {
       setSaving(true);
       
+      // Get the latest display order value for new projects
+      let displayOrder = 1;
+      if (isNew) {
+        const { data: maxOrderData } = await supabase
+          .from('projects')
+          .select('display_order')
+          .order('display_order', { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (maxOrderData) {
+          displayOrder = maxOrderData.display_order + 1;
+        }
+      } else if (project) {
+        // For existing projects, use the current display_order
+        displayOrder = project.display_order || 1;
+      }
+      
       const projectData = {
         title: values.title,
         description: values.description,
@@ -253,6 +271,7 @@ const AdminProjectEdit = () => {
         duration: values.duration,
         // We'll keep the category field for backward compatibility but won't use it for new relationships
         category: selectedCategories.length > 0 ? selectedCategories[0].label : '',
+        display_order: displayOrder, // Add the display_order field
       };
       
       if (isNew) {
