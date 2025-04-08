@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,12 +39,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from "@/components/ui/checkbox";
+import { fetchCategories, createCategory, getProjectCategories, updateProjectCategories, Category } from '@/services/categoryService';
+import { MultiSelect, OptionType } from '@/components/ui/multi-select';
 
 const projectSchema = z.object({
   title: z.string().min(1, 'Название проекта обязательно'),
   description: z.string().min(1, 'Краткое описание обязательно'),
   full_description: z.string().optional(),
-  category: z.string().min(1, 'Категория обязательна'),
   location: z.string().min(1, 'Локация обязательна'),
   year: z.string().min(1, 'Год обязателен'),
   area: z.string().optional(),
@@ -72,6 +72,11 @@ const AdminProjectEdit = () => {
   const [photosChanged, setPhotosChanged] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<OptionType[]>([]);
+  const [initialFormValues, setInitialFormValues] = useState<ProjectFormValues | null>(null);
+  const [formChanged, setFormChanged] = useState(false);
+  const [categoriesChanged, setCategoriesChanged] = useState(false);
   const isNew = id === 'new';
 
   const form = useForm<ProjectFormValues>({
@@ -80,7 +85,6 @@ const AdminProjectEdit = () => {
       title: '',
       description: '',
       full_description: '',
-      category: '',
       location: '',
       year: '',
       area: '',
@@ -92,6 +96,17 @@ const AdminProjectEdit = () => {
       duration: '',
     }
   });
+  
+  const formValues = form.watch();
+
+  useEffect(() => {
+    if (initialFormValues) {
+      const hasChanged = Object.keys(formValues).some(
+        (key) => formValues[key as keyof ProjectFormValues] !== initialFormValues[key as keyof ProjectFormValues]
+      );
+      setFormChanged(hasChanged || categoriesChanged);
+    }
+  }, [formValues, initialFormValues, categoriesChanged]);
 
   useEffect(() => {
     const authStatus = localStorage.getItem('isAuthenticated');
@@ -102,12 +117,28 @@ const AdminProjectEdit = () => {
     
     setIsAuthenticated(true);
     
+    fetchCategoriesData();
+    
     if (!isNew) {
       fetchProject();
     } else {
       setLoading(false);
     }
   }, [navigate, id, isNew]);
+
+  const fetchCategoriesData = async () => {
+    try {
+      const categoriesData = await fetchCategories();
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить категории",
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchProject = async () => {
     try {
@@ -140,11 +171,37 @@ const AdminProjectEdit = () => {
       
       setPhotos(sortedPhotos);
       
+      // Fetch project categories
+      const projectCategories = await getProjectCategories(Number(id));
+      const categoryOptions = projectCategories.map(cat => ({
+        value: cat.id,
+        label: cat.name
+      }));
+      setSelectedCategories(categoryOptions);
+      
+      // Set form values from project data
       Object.keys(projectData).forEach((key) => {
         if (form.getValues(key as keyof ProjectFormValues) !== undefined) {
           form.setValue(key as keyof ProjectFormValues, projectData[key] || '');
         }
       });
+      
+      // Store initial form values for change detection
+      const initialValues: ProjectFormValues = {
+        title: projectData.title || '',
+        description: projectData.description || '',
+        full_description: projectData.full_description || '',
+        location: projectData.location || '',
+        year: projectData.year || '',
+        area: projectData.area || '',
+        budget: projectData.budget || '',
+        challenge: projectData.challenge || '',
+        solution: projectData.solution || '',
+        results: projectData.results || '',
+        client: projectData.client || '',
+        duration: projectData.duration || '',
+      };
+      setInitialFormValues(initialValues);
       
     } catch (error) {
       console.error('Error fetching project:', error);
@@ -159,6 +216,24 @@ const AdminProjectEdit = () => {
     }
   };
 
+  const handleCategoryChange = (selected: OptionType[]) => {
+    setSelectedCategories(selected);
+    // Check if categories have changed from initial state
+    if (project) {
+      setCategoriesChanged(true);
+    }
+  };
+
+  const handleCreateCategory = async (name: string): Promise<OptionType> => {
+    const newCategory = await createCategory(name);
+    // Update local categories state
+    setCategories([...categories, newCategory]);
+    return {
+      value: newCategory.id,
+      label: newCategory.name
+    };
+  };
+
   const onSubmit = async (values: ProjectFormValues) => {
     try {
       setSaving(true);
@@ -166,7 +241,6 @@ const AdminProjectEdit = () => {
       const projectData = {
         title: values.title,
         description: values.description,
-        category: values.category,
         location: values.location,
         year: values.year,
         full_description: values.full_description,
@@ -177,6 +251,8 @@ const AdminProjectEdit = () => {
         results: values.results,
         client: values.client,
         duration: values.duration,
+        // We'll keep the category field for backward compatibility but won't use it for new relationships
+        category: selectedCategories.length > 0 ? selectedCategories[0].label : '',
       };
       
       if (isNew) {
@@ -187,6 +263,12 @@ const AdminProjectEdit = () => {
           .single();
         
         if (createError) throw createError;
+        
+        // Save categories relationship
+        if (selectedCategories.length > 0) {
+          const categoryIds = selectedCategories.map(cat => Number(cat.value));
+          await updateProjectCategories(newProject.id, categoryIds);
+        }
         
         toast({
           title: "Успех",
@@ -203,6 +285,10 @@ const AdminProjectEdit = () => {
         
         if (updateError) throw updateError;
         
+        // Update categories relationship
+        const categoryIds = selectedCategories.map(cat => Number(cat.value));
+        await updateProjectCategories(Number(id), categoryIds);
+        
         toast({
           title: "Успех",
           description: "Проект успешно обновлен",
@@ -213,6 +299,11 @@ const AdminProjectEdit = () => {
           ...project!,
           ...projectData
         });
+        
+        // Reset change tracking
+        setInitialFormValues(values);
+        setCategoriesChanged(false);
+        setFormChanged(false);
       }
     } catch (error) {
       console.error('Error saving project:', error);
@@ -484,6 +575,12 @@ const AdminProjectEdit = () => {
     return null;
   }
 
+  // Transform categories into options for MultiSelect
+  const categoryOptions = categories.map(cat => ({
+    value: cat.id,
+    label: cat.name
+  }));
+
   return (
     <AdminLayout>
       <div>
@@ -546,19 +643,17 @@ const AdminProjectEdit = () => {
                           )}
                         />
                         
-                        <FormField
-                          control={form.control}
-                          name="category"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Категория*</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <div className="space-y-2">
+                          <FormLabel htmlFor="categories">Категории*</FormLabel>
+                          <MultiSelect
+                            options={categoryOptions}
+                            selected={selectedCategories}
+                            onChange={handleCategoryChange}
+                            placeholder="Выберите категории"
+                            createNew={handleCreateCategory}
+                            createNewPlaceholder="Создать категорию '{value}'"
+                          />
+                        </div>
                         
                         <FormField
                           control={form.control}
@@ -728,7 +823,7 @@ const AdminProjectEdit = () => {
                       <div className="flex justify-end">
                         <Button 
                           type="submit" 
-                          disabled={saving}
+                          disabled={saving || (!formChanged && !isNew)}
                           className="bg-fpm-blue hover:bg-fpm-blue/90 text-white"
                         >
                           {saving ? 'Сохранение...' : 'Сохранить проект'}
