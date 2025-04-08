@@ -29,11 +29,11 @@ const Projects = () => {
       try {
         setLoading(true);
         
-        // Get all projects
+        // Get all projects ordered by display_order
         const { data: projectsData, error: projectsError } = await supabase
           .from('projects')
           .select('*')
-          .order('id', { ascending: false });
+          .order('display_order', { ascending: true });
         
         if (projectsError) throw new Error('Не удалось загрузить проекты');
         
@@ -87,7 +87,7 @@ const Projects = () => {
             ...project,
             image: mainPhoto?.image_url || '/placeholder.svg',
             tags: projectTags as string[],
-            categories: projectCategories
+            categories: projectCategories.filter(Boolean) // Filter out any null/undefined categories
           };
         });
         
@@ -114,7 +114,7 @@ const Projects = () => {
         allProjects.filter(project => {
           // Check if the project has the selected category either in the legacy field or in the categories array
           return project.category === selectedCategory || 
-                project.categories?.some(cat => cat?.name === selectedCategory);
+                (project.categories && project.categories.some(cat => cat?.name === selectedCategory));
         })
       );
     }

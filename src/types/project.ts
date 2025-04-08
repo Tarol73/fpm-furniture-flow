@@ -38,3 +38,10 @@ export interface ExtendedProject {
   mainImage?: string;
   categories?: Category[];
 }
+
+export interface AdminSetting {
+  key: string;
+  value: string;
+  created_at?: string;
+  updated_at?: string;
+}
