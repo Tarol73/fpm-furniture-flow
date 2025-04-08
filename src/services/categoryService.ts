@@ -34,11 +34,13 @@ export const createCategory = async (name: string): Promise<Category> => {
 };
 
 export const getProjectCategories = async (projectId: number): Promise<Category[]> => {
+  // We need to use .from('project_categories') with a string literal to avoid type issues
+  // Then manually type the return data
   const { data, error } = await supabase
     .from('project_categories')
     .select(`
       category_id,
-      categories(id, name)
+      categories:category_id(id, name)
     `)
     .eq('project_id', projectId);
   
@@ -46,7 +48,11 @@ export const getProjectCategories = async (projectId: number): Promise<Category[
     throw new Error(`Failed to fetch project categories: ${error.message}`);
   }
   
-  return data?.map(item => item.categories as Category) || [];
+  // Transform the data to match the expected Category interface
+  return (data || []).map(item => {
+    // Access the nested 'categories' object that contains category data
+    return (item.categories as Category);
+  });
 };
 
 export const updateProjectCategories = async (projectId: number, categoryIds: number[]): Promise<void> => {
@@ -67,12 +73,15 @@ export const updateProjectCategories = async (projectId: number, categoryIds: nu
       category_id: categoryId
     }));
     
-    const { error: insertError } = await supabase
-      .from('project_categories')
-      .insert(categoryLinks);
-    
-    if (insertError) {
-      throw new Error(`Failed to update project categories: ${insertError.message}`);
+    // Insert each link individually to avoid type issues
+    for (const link of categoryLinks) {
+      const { error: insertError } = await supabase
+        .from('project_categories')
+        .insert(link);
+      
+      if (insertError) {
+        throw new Error(`Failed to update project categories: ${insertError.message}`);
+      }
     }
   }
 };

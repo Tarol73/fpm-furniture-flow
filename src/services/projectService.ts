@@ -37,10 +37,13 @@ export const fetchProjectById = async (id: string): Promise<ExtendedProject> => 
   
   if (tagsError) throw new Error('Не удалось загрузить теги проекта');
   
-  // Fetch project categories
+  // Fetch project categories using a string literal to specify the table name
   const { data: categoriesData, error: categoriesError } = await supabase
     .from('project_categories')
-    .select('categories(id, name)')
+    .select(`
+      category_id,
+      categories:category_id(id, name)
+    `)
     .eq('project_id', projectId);
   
   if (categoriesError) throw new Error('Не удалось загрузить категории проекта');
@@ -68,6 +71,7 @@ export const fetchProjectById = async (id: string): Promise<ExtendedProject> => 
 
 export const fetchRelatedProjects = async (projectId: number, category: string): Promise<ExtendedProject[]> => {
   // First try to get related projects by common categories
+  // Use string literal for the table name to avoid type issues
   const { data: projectCategories } = await supabase
     .from('project_categories')
     .select('category_id')

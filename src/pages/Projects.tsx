@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Database } from '@/integrations/supabase/types';
+import { fetchCategories } from '@/services/categoryService';
 
 type ProjectWithDetails = Project & {
   image?: string;
@@ -25,7 +25,7 @@ const Projects = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch projects, their main photos, and tags from Supabase
+    // Fetch projects, their main photos, tags, and categories from Supabase
     const fetchProjects = async () => {
       try {
         setLoading(true);
@@ -54,8 +54,9 @@ const Projects = () => {
         if (projectTagsError) throw new Error('Не удалось загрузить теги проектов');
         
         // Get all categories
-        const uniqueCategories = Array.from(new Set(projectsData.map(project => project.category)));
-        setCategories(['Все проекты', ...uniqueCategories]);
+        const allCategories = await fetchCategories();
+        const categoryNames = allCategories.map(cat => cat.name);
+        setCategories(['Все проекты', ...categoryNames]);
         
         // Combine the data
         const projectsWithDetails = projectsData.map(project => {
