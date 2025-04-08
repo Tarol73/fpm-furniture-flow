@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -6,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { X, Plus, Save, Key } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, genericSupabase } from '@/integrations/supabase/client';
 import { AdminSetting } from '@/types/project';
 
 const Admin = () => {
@@ -34,7 +35,7 @@ const Admin = () => {
 
   const fetchEmailList = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await genericSupabase
         .from('admin_settings')
         .select('*')
         .eq('key', 'recipient_emails');
@@ -55,7 +56,7 @@ const Admin = () => {
     e.preventDefault();
     
     try {
-      const { data, error } = await supabase
+      const { data, error } = await genericSupabase
         .from('admin_settings')
         .select('*')
         .eq('key', 'admin_password')
@@ -124,7 +125,7 @@ const Admin = () => {
     
     try {
       // Save to database
-      const { error } = await supabase
+      const { error } = await genericSupabase
         .from('admin_settings')
         .upsert({
           key: 'recipient_emails',
@@ -156,7 +157,7 @@ const Admin = () => {
     
     try {
       // Save to database
-      const { error } = await supabase
+      const { error } = await genericSupabase
         .from('admin_settings')
         .upsert({
           key: 'recipient_emails',
@@ -204,7 +205,7 @@ const Admin = () => {
     }
     
     try {
-      const { error } = await supabase
+      const { error } = await genericSupabase
         .from('admin_settings')
         .upsert({
           key: 'admin_password',
