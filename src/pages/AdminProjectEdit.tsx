@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -152,15 +151,12 @@ const AdminProjectEdit = () => {
     try {
       setSaving(true);
       
-      // Ensure values match the required schema for Supabase
-      // This satisfies the type requirements for category, description, location, title and year
       const projectData = {
         title: values.title,
         description: values.description,
         category: values.category,
         location: values.location,
         year: values.year,
-        // Optional fields
         full_description: values.full_description,
         area: values.area,
         budget: values.budget,
