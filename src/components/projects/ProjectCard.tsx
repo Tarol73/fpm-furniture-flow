@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Category } from '@/services/categoryService';
 
 export interface Project {
   id: number;
@@ -22,6 +23,7 @@ export interface Project {
   budget?: string;
   image?: string;
   tags?: string[];
+  categories?: Category[];
 }
 
 interface ProjectCardProps {
@@ -47,7 +49,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           </Link>
           <span className="text-sm text-gray-500 font-light">{project.year}</span>
         </div>
-        <p className="text-sm text-gray-500 mb-3 font-light">{project.location} • {project.category}</p>
+        <p className="text-sm text-gray-500 mb-3 font-light">
+          {project.location} • {project.categories && project.categories.length > 0 
+            ? project.categories[0].name 
+            : project.category}
+        </p>
         <p className="text-gray-600 mb-4 font-light line-clamp-3">{project.description}</p>
         <div className="flex justify-between items-end">
           <div className="flex flex-wrap gap-2">
