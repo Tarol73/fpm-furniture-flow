@@ -37,6 +37,11 @@ const Footer = () => {
     });
   };
 
+  // Function to handle secret navigation to admin panel
+  const handleSecretAdminAccess = () => {
+    navigate('/admin');
+  };
+
   return (
     <footer className="bg-fpm-blue text-white">
       <div className="container mx-auto px-4 py-12">
@@ -125,7 +130,15 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-6 border-t border-gray-700 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-sm text-gray-400 font-light">© 2024 FPM Furniture Project Management. Все права защищены.</p>
+          <p className="text-sm text-gray-400 font-light">
+            © <button 
+                onClick={handleSecretAdminAccess} 
+                className="text-gray-400 hover:text-gray-400 focus:outline-none cursor-default"
+                aria-label="Year"
+              >
+                2024
+              </button> FPM Furniture Project Management. Все права защищены.
+          </p>
           <div className="mt-4 md:mt-0">
             <ul className="flex space-x-4">
               <li>
