@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { X, Plus } from 'lucide-react';
+import AdminLayout from '@/components/admin/AdminLayout';
 
 const Admin = () => {
   const { toast } = useToast();
@@ -21,6 +22,12 @@ const Admin = () => {
     if (storedEmails) {
       setEmailList(JSON.parse(storedEmails));
     }
+    
+    // Check if the user is already authenticated
+    const authStatus = localStorage.getItem('isAuthenticated');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
   }, []);
 
   // Simple authentication (for demo purposes)
@@ -29,6 +36,7 @@ const Admin = () => {
     // In a real application, this would be a proper authentication system
     if (password === 'admin123') {
       setIsAuthenticated(true);
+      localStorage.setItem('isAuthenticated', 'true');
       toast({
         title: "Успешный вход",
         description: "Вы успешно вошли в панель администратора",
@@ -95,25 +103,25 @@ const Admin = () => {
     });
   };
 
-  return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
-      
-      <section className="pt-28 pb-16 md:pt-40 md:pb-20 bg-fpm-blue text-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-light mb-6">Панель администратора</h1>
-            <p className="text-xl md:text-2xl font-light leading-relaxed">
-              Управление настройками сайта
-            </p>
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        
+        <section className="pt-28 pb-16 md:pt-40 md:pb-20 bg-fpm-blue text-white">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <h1 className="text-4xl md:text-5xl font-light mb-6">Панель администратора</h1>
+              <p className="text-xl md:text-2xl font-light leading-relaxed">
+                Вход в систему управления
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
-      
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            {!isAuthenticated ? (
+        </section>
+        
+        <section className="py-16 md:py-24">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto">
               <div className="bg-white p-8 rounded-lg shadow-md">
                 <h2 className="text-2xl font-light text-fpm-blue mb-6">Вход в систему</h2>
                 <form onSubmit={handleLogin} className="space-y-6">
@@ -135,58 +143,62 @@ const Admin = () => {
                   </Button>
                 </form>
               </div>
-            ) : (
-              <div className="bg-white p-8 rounded-lg shadow-md">
-                <h2 className="text-2xl font-light text-fpm-blue mb-6">Настройка списка получателей</h2>
-                <p className="text-gray-600 mb-8">
-                  Добавьте электронные адреса, на которые будут приходить заявки с формы обратной связи.
-                </p>
-                
-                <form onSubmit={handleAddEmail} className="flex gap-2 mb-8">
-                  <Input
-                    type="email"
-                    placeholder="Введите email"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    required
-                    className="flex-grow"
-                  />
-                  <Button type="submit" className="bg-fpm-teal hover:bg-fpm-teal/90 text-white">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Добавить
-                  </Button>
-                </form>
-                
-                <div className="space-y-2">
-                  <h3 className="text-lg font-medium mb-4">Текущий список получателей:</h3>
-                  {emailList.length === 0 ? (
-                    <p className="text-gray-500 italic">Список пуст. Добавьте хотя бы один email.</p>
-                  ) : (
-                    <ul className="space-y-2">
-                      {emailList.map((email, index) => (
-                        <li key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                          <span>{email}</span>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => handleRemoveEmail(email)}
-                            className="text-gray-500 hover:text-red-500 hover:bg-transparent"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
+        </section>
+        
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <AdminLayout>
+      <div>
+        <h2 className="text-2xl font-light text-fpm-blue mb-6">Настройка списка получателей</h2>
+        <p className="text-gray-600 mb-8">
+          Добавьте электронные адреса, на которые будут приходить заявки с формы обратной связи.
+        </p>
+        
+        <form onSubmit={handleAddEmail} className="flex gap-2 mb-8">
+          <Input
+            type="email"
+            placeholder="Введите email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            required
+            className="flex-grow"
+          />
+          <Button type="submit" className="bg-fpm-teal hover:bg-fpm-teal/90 text-white">
+            <Plus className="w-4 h-4 mr-2" />
+            Добавить
+          </Button>
+        </form>
+        
+        <div className="space-y-2">
+          <h3 className="text-lg font-medium mb-4">Текущий список получателей:</h3>
+          {emailList.length === 0 ? (
+            <p className="text-gray-500 italic">Список пуст. Добавьте хотя бы один email.</p>
+          ) : (
+            <ul className="space-y-2">
+              {emailList.map((email, index) => (
+                <li key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                  <span>{email}</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => handleRemoveEmail(email)}
+                    className="text-gray-500 hover:text-red-500 hover:bg-transparent"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      </section>
-      
-      <Footer />
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
