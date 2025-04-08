@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,7 +39,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Separator } from '@/components/ui/separator';
 
-// Schema for form validation
 const projectSchema = z.object({
   title: z.string().min(1, 'Название проекта обязательно'),
   description: z.string().min(1, 'Краткое описание обязательно'),
@@ -92,7 +90,6 @@ const AdminProjectEdit = () => {
   });
 
   useEffect(() => {
-    // Check authentication
     const authStatus = localStorage.getItem('isAuthenticated');
     if (authStatus !== 'true') {
       navigate('/admin');
@@ -112,20 +109,18 @@ const AdminProjectEdit = () => {
     try {
       setLoading(true);
       
-      // Fetch project data
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
         .select('*')
-        .eq('id', id)
+        .eq('id', Number(id))
         .single();
       
       if (projectError) throw projectError;
       
-      // Fetch project photos
       const { data: photosData, error: photosError } = await supabase
         .from('project_photos')
         .select('*')
-        .eq('project_id', id)
+        .eq('project_id', Number(id))
         .order('display_order', { ascending: true });
       
       if (photosError) throw photosError;
@@ -133,7 +128,6 @@ const AdminProjectEdit = () => {
       setProject(projectData);
       setPhotos(photosData || []);
       
-      // Set form values
       Object.keys(projectData).forEach((key) => {
         if (form.getValues(key as keyof ProjectFormValues) !== undefined) {
           form.setValue(key as keyof ProjectFormValues, projectData[key] || '');
@@ -158,10 +152,9 @@ const AdminProjectEdit = () => {
       setSaving(true);
       
       if (isNew) {
-        // Create new project
         const { data: newProject, error: createError } = await supabase
           .from('projects')
-          .insert([values])
+          .insert(values)
           .select()
           .single();
         
@@ -175,11 +168,10 @@ const AdminProjectEdit = () => {
         
         navigate(`/admin/projects/${newProject.id}`);
       } else {
-        // Update existing project
         const { error: updateError } = await supabase
           .from('projects')
           .update(values)
-          .eq('id', id);
+          .eq('id', Number(id));
         
         if (updateError) throw updateError;
         
@@ -213,7 +205,6 @@ const AdminProjectEdit = () => {
     try {
       setUploading(true);
       
-      // If it's a new project, save it first
       if (isNew) {
         toast({
           title: "Ошибка",
@@ -223,36 +214,30 @@ const AdminProjectEdit = () => {
         return;
       }
       
-      // Process and upload each file
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}-${i}.${fileExt}`;
         const filePath = `projects/${id}/${fileName}`;
         
-        // Upload file to Supabase Storage
         const { error: uploadError } = await supabase.storage
           .from('project-images')
           .upload(filePath, file);
         
         if (uploadError) throw uploadError;
         
-        // Get public URL
         const { data: publicUrlData } = supabase.storage
           .from('project-images')
           .getPublicUrl(filePath);
         
         const imageUrl = publicUrlData.publicUrl;
         
-        // Calculate next display order
         const nextOrder = photos.length > 0 
           ? Math.max(...photos.map(p => p.display_order)) + 1 
           : 1;
         
-        // Check if this is the first photo (make it main)
         const isMain = photos.length === 0;
         
-        // Add to project_photos table
         const { data: photoData, error: photoError } = await supabase
           .from('project_photos')
           .insert({
@@ -266,7 +251,6 @@ const AdminProjectEdit = () => {
         
         if (photoError) throw photoError;
         
-        // Update local state
         setPhotos(prev => [...prev, photoData]);
       }
       
@@ -285,7 +269,6 @@ const AdminProjectEdit = () => {
       });
     } finally {
       setUploading(false);
-      // Reset the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -301,7 +284,6 @@ const AdminProjectEdit = () => {
       const photoToDelete = photos.find(p => p.id === photoId);
       if (!photoToDelete) return;
       
-      // Delete from project_photos table
       const { error: deleteError } = await supabase
         .from('project_photos')
         .delete()
@@ -309,7 +291,6 @@ const AdminProjectEdit = () => {
       
       if (deleteError) throw deleteError;
       
-      // If we deleted the main photo, set another one as main
       if (photoToDelete.is_main && photos.length > 1) {
         const newMainPhoto = photos.find(p => p.id !== photoId);
         if (newMainPhoto) {
@@ -322,7 +303,6 @@ const AdminProjectEdit = () => {
         }
       }
       
-      // Update local state
       setPhotos(prev => prev.filter(p => p.id !== photoId));
       
       toast({
@@ -343,15 +323,13 @@ const AdminProjectEdit = () => {
 
   const handleSetMainPhoto = async (photoId: number) => {
     try {
-      // Update all photos to not be main
       const { error: updateAllError } = await supabase
         .from('project_photos')
         .update({ is_main: false })
-        .eq('project_id', id);
+        .eq('project_id', Number(id));
       
       if (updateAllError) throw updateAllError;
       
-      // Set the selected photo as main
       const { error: updateMainError } = await supabase
         .from('project_photos')
         .update({ is_main: true })
@@ -359,7 +337,6 @@ const AdminProjectEdit = () => {
       
       if (updateMainError) throw updateMainError;
       
-      // Update local state
       setPhotos(prev => prev.map(p => ({
         ...p,
         is_main: p.id === photoId
@@ -386,7 +363,6 @@ const AdminProjectEdit = () => {
       const photoIndex = photos.findIndex(p => p.id === photoId);
       if (photoIndex === -1) return;
       
-      // Can't move first photo up or last photo down
       if (
         (direction === 'up' && photoIndex === 0) || 
         (direction === 'down' && photoIndex === photos.length - 1)
@@ -394,12 +370,10 @@ const AdminProjectEdit = () => {
         return;
       }
       
-      // Get the photo to swap with
       const swapIndex = direction === 'up' ? photoIndex - 1 : photoIndex + 1;
       const currentPhoto = photos[photoIndex];
       const swapPhoto = photos[swapIndex];
       
-      // Swap display_order values
       const { error: updateCurrentError } = await supabase
         .from('project_photos')
         .update({ display_order: swapPhoto.display_order })
@@ -414,7 +388,6 @@ const AdminProjectEdit = () => {
       
       if (updateSwapError) throw updateSwapError;
       
-      // Update local state
       const newPhotos = [...photos];
       newPhotos[photoIndex] = { ...currentPhoto, display_order: swapPhoto.display_order };
       newPhotos[swapIndex] = { ...swapPhoto, display_order: currentPhoto.display_order };
