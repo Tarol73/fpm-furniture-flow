@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { ExtendedProject } from '@/types/project';
+import { Category } from '@/services/categoryService';
 import { 
   Table, 
   TableBody, 
@@ -15,11 +16,12 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Edit2, Plus, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const AdminProjects = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [projects, setProjects] = useState<ExtendedProject[]>([]);
+  const [projects, setProjects] = useState<(ExtendedProject & { categories?: Category[] })[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -59,9 +61,28 @@ const AdminProjects = () => {
             .eq('is_main', true)
             .single();
           
+          // Fetch categories for this project
+          const { data: categoriesData, error: categoriesError } = await supabase
+            .from('project_categories')
+            .select(`
+              category_id,
+              categories:category_id(id, name)
+            `)
+            .eq('project_id', project.id);
+
+          if (categoriesError) {
+            console.error('Error fetching categories:', categoriesError);
+          }
+
+          // Extract categories from the response
+          const categories = categoriesData
+            ? categoriesData.map(item => item.categories)
+            : [];
+          
           return {
             ...project,
-            mainImage: photosData?.image_url || '/placeholder.svg'
+            mainImage: photosData?.image_url || '/placeholder.svg',
+            categories: categories
           };
         })
       );
@@ -169,7 +190,7 @@ const AdminProjects = () => {
                   <TableHead className="w-[100px]">ID</TableHead>
                   <TableHead className="w-[80px]">Фото</TableHead>
                   <TableHead>Название</TableHead>
-                  <TableHead>Категория</TableHead>
+                  <TableHead>Категории</TableHead>
                   <TableHead>Год</TableHead>
                   <TableHead>Локация</TableHead>
                   <TableHead className="text-right">Действия</TableHead>
@@ -189,7 +210,19 @@ const AdminProjects = () => {
                       </div>
                     </TableCell>
                     <TableCell>{project.title}</TableCell>
-                    <TableCell>{project.category}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {project.categories && project.categories.length > 0 ? (
+                          project.categories.map((category, index) => (
+                            <Badge key={index} variant="outline" className="bg-gray-100 text-xs">
+                              {category.name}
+                            </Badge>
+                          ))
+                        ) : (
+                          <span className="text-gray-500 text-sm">{project.category}</span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{project.year}</TableCell>
                     <TableCell>{project.location}</TableCell>
                     <TableCell className="text-right">

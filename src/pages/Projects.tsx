@@ -3,22 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectCard } from '@/components/projects/ProjectCard';
 import { ProjectFilter } from '@/components/projects/ProjectFilter';
+import ProjectsNotFound from '@/components/projects/ProjectsNotFound';
 import { ExtendedProject } from '@/types/project';
 import { useLocation } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { fetchCategories } from '@/services/categoryService';
-
-// Create a simple ProjectsNotFound component since it's missing
-const ProjectsNotFound = () => {
-  return (
-    <div className="text-center py-16">
-      <h3 className="text-xl font-light mb-4">Проекты не найдены</h3>
-      <p className="text-gray-500">По выбранным критериям не найдено ни одного проекта.</p>
-    </div>
-  );
-};
 
 type ProjectWithDetails = ExtendedProject & {
   image?: string;
@@ -64,6 +55,16 @@ const Projects = () => {
         
         if (projectTagsError) throw new Error('Не удалось загрузить теги проектов');
         
+        // Get project categories for all projects
+        const { data: projectCategoriesData, error: projectCategoriesError } = await supabase
+          .from('project_categories')
+          .select(`
+            project_id,
+            categories:category_id(id, name)
+          `);
+          
+        if (projectCategoriesError) throw new Error('Не удалось загрузить категории проектов');
+        
         // Get all categories
         const allCategories = await fetchCategories();
         const categoryNames = allCategories.map(cat => cat.name);
@@ -77,10 +78,16 @@ const Projects = () => {
             ?.map(tag => tag.tags?.name)
             ?.filter(Boolean) || [];
           
+          // Get all categories for this project
+          const projectCategories = projectCategoriesData
+            ?.filter(pc => pc.project_id === project.id)
+            ?.map(pc => pc.categories);
+          
           return {
             ...project,
             image: mainPhoto?.image_url || '/placeholder.svg',
-            tags: projectTags as string[]
+            tags: projectTags as string[],
+            categories: projectCategories
           };
         });
         
@@ -104,7 +111,11 @@ const Projects = () => {
       setFilteredProjects(allProjects);
     } else {
       setFilteredProjects(
-        allProjects.filter(project => project.category === selectedCategory)
+        allProjects.filter(project => {
+          // Check if the project has the selected category either in the legacy field or in the categories array
+          return project.category === selectedCategory || 
+                project.categories?.some(cat => cat?.name === selectedCategory);
+        })
       );
     }
   }, [selectedCategory, allProjects]);

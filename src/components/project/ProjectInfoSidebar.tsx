@@ -2,9 +2,10 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Project } from '@/components/projects/ProjectCard';
+import { Category } from '@/services/categoryService';
 
 interface ProjectInfoSidebarProps {
-  project: Project;
+  project: Project & { categories?: Category[] };
 }
 
 const ProjectInfoSidebar = ({ project }: ProjectInfoSidebarProps) => {
@@ -33,6 +34,19 @@ const ProjectInfoSidebar = ({ project }: ProjectInfoSidebarProps) => {
             <h4 className="text-sm text-gray-500 font-light">Бюджет</h4>
             <p className="text-gray-700 font-light">{project.budget}</p>
           </div>
+          
+          {project.categories && project.categories.length > 0 && (
+            <div>
+              <h4 className="text-sm text-gray-500 font-light mb-2">Категории</h4>
+              <div className="flex flex-wrap gap-2">
+                {project.categories.map(category => (
+                  <Badge key={category.id} variant="outline" className="bg-gray-100 text-gray-700 hover:bg-gray-200 font-light">
+                    {category.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
           
           {project.tags && project.tags.length > 0 && (
             <div>

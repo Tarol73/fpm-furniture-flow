@@ -1,11 +1,13 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Calendar } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Tag } from 'lucide-react';
 import { Project } from '@/components/projects/ProjectCard';
+import { Category } from '@/services/categoryService';
+import { Badge } from '@/components/ui/badge';
 
 interface ProjectHeaderProps {
-  project: Project;
+  project: Project & { categories?: Category[] };
 }
 
 const ProjectHeader = ({ project }: ProjectHeaderProps) => {
@@ -27,8 +29,17 @@ const ProjectHeader = ({ project }: ProjectHeaderProps) => {
           <Calendar className="h-5 w-5 mr-1 text-fpm-orange" />
           <span>{project.year}</span>
         </div>
-        <div>
-          <span className="font-medium text-gray-700">{project.category}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <Tag className="h-5 w-5 mr-1 text-fpm-orange" />
+          {project.categories && project.categories.length > 0 ? (
+            project.categories.map(category => (
+              <Badge key={category.id} variant="outline" className="bg-gray-100 text-gray-700 hover:bg-gray-200 font-light">
+                {category.name}
+              </Badge>
+            ))
+          ) : (
+            <span className="font-medium text-gray-700">{project.category}</span>
+          )}
         </div>
       </div>
     </div>
