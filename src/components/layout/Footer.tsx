@@ -133,7 +133,7 @@ const Footer = () => {
           <p className="text-sm text-gray-400 font-light">
             © <button 
                 onClick={handleSecretAdminAccess} 
-                className="text-gray-400 hover:text-gray-400 focus:outline-none cursor-default"
+                className="text-gray-400 hover:text-gray-300 cursor-pointer"
                 aria-label="Year"
               >
                 2024

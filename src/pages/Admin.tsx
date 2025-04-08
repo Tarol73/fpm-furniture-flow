@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
@@ -8,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { X, Plus, Save, Key } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
+import { AdminSetting } from '@/types/project';
 
 const Admin = () => {
   const { toast } = useToast();
@@ -42,7 +42,8 @@ const Admin = () => {
       if (error) throw error;
       
       if (data && data.length > 0) {
-        setEmailList(JSON.parse(data[0].value || '[]'));
+        const setting = data[0] as AdminSetting;
+        setEmailList(JSON.parse(setting.value || '[]'));
       }
     } catch (error) {
       console.error('Error fetching email list:', error);
@@ -56,7 +57,7 @@ const Admin = () => {
     try {
       const { data, error } = await supabase
         .from('admin_settings')
-        .select('value')
+        .select('*')
         .eq('key', 'admin_password')
         .single();
       
@@ -65,7 +66,8 @@ const Admin = () => {
       }
       
       // If there's no password set yet, use the default one
-      const storedPassword = data?.value || 'admin123';
+      const setting = data as AdminSetting;
+      const storedPassword = setting?.value || 'admin123';
       
       if (password === storedPassword) {
         setIsAuthenticated(true);
@@ -124,13 +126,10 @@ const Admin = () => {
       // Save to database
       const { error } = await supabase
         .from('admin_settings')
-        .upsert(
-          { 
-            key: 'recipient_emails', 
-            value: JSON.stringify(updatedList) 
-          },
-          { onConflict: 'key' }
-        );
+        .upsert({
+          key: 'recipient_emails',
+          value: JSON.stringify(updatedList)
+        }, { onConflict: 'key' });
       
       if (error) throw error;
       
@@ -159,13 +158,10 @@ const Admin = () => {
       // Save to database
       const { error } = await supabase
         .from('admin_settings')
-        .upsert(
-          { 
-            key: 'recipient_emails', 
-            value: JSON.stringify(updatedList) 
-          },
-          { onConflict: 'key' }
-        );
+        .upsert({
+          key: 'recipient_emails',
+          value: JSON.stringify(updatedList)
+        }, { onConflict: 'key' });
       
       if (error) throw error;
       
@@ -210,13 +206,10 @@ const Admin = () => {
     try {
       const { error } = await supabase
         .from('admin_settings')
-        .upsert(
-          { 
-            key: 'admin_password', 
-            value: newPassword 
-          },
-          { onConflict: 'key' }
-        );
+        .upsert({
+          key: 'admin_password',
+          value: newPassword
+        }, { onConflict: 'key' });
       
       if (error) throw error;
       

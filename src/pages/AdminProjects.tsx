@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -30,7 +29,6 @@ const AdminProjects = () => {
   const [orderChanged, setOrderChanged] = useState(false);
 
   useEffect(() => {
-    // Check authentication
     const authStatus = localStorage.getItem('isAuthenticated');
     if (authStatus !== 'true') {
       navigate('/admin');
@@ -45,7 +43,6 @@ const AdminProjects = () => {
     try {
       setLoading(true);
       
-      // Fetch projects from Supabase ordered by display_order
       const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
         .select('*')
@@ -55,7 +52,6 @@ const AdminProjects = () => {
         throw projectsError;
       }
       
-      // Fetch main images for each project
       const projectsWithImages = await Promise.all(
         projectsData.map(async (project) => {
           const { data: photosData } = await supabase
@@ -65,7 +61,6 @@ const AdminProjects = () => {
             .eq('is_main', true)
             .single();
           
-          // Fetch categories for this project
           const { data: categoriesData, error: categoriesError } = await supabase
             .from('project_categories')
             .select(`
@@ -78,9 +73,8 @@ const AdminProjects = () => {
             console.error('Error fetching categories:', categoriesError);
           }
 
-          // Extract categories from the response
           const categories = categoriesData
-            ? categoriesData.map(item => item.categories)
+            ? categoriesData.map(item => item.categories as Category)
             : [];
           
           return {
@@ -120,7 +114,6 @@ const AdminProjects = () => {
     }
     
     try {
-      // Delete all project photos first
       const { error: photosError } = await supabase
         .from('project_photos')
         .delete()
@@ -128,7 +121,6 @@ const AdminProjects = () => {
       
       if (photosError) throw photosError;
       
-      // Delete project tags
       const { error: tagsError } = await supabase
         .from('project_tags')
         .delete()
@@ -136,7 +128,6 @@ const AdminProjects = () => {
       
       if (tagsError) throw tagsError;
       
-      // Delete project categories
       const { error: categoriesError } = await supabase
         .from('project_categories')
         .delete()
@@ -144,7 +135,6 @@ const AdminProjects = () => {
         
       if (categoriesError) throw categoriesError;
       
-      // Delete the project
       const { error: projectError } = await supabase
         .from('projects')
         .delete()
@@ -152,7 +142,6 @@ const AdminProjects = () => {
       
       if (projectError) throw projectError;
       
-      // Update local state
       const updatedProjects = projects.filter(project => project.id !== projectId);
       setProjects(updatedProjects);
       setDisplayedProjects(updatedProjects);
@@ -172,7 +161,6 @@ const AdminProjects = () => {
     }
   };
 
-  // Search functionality
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
@@ -192,7 +180,6 @@ const AdminProjects = () => {
     setDisplayedProjects(filtered);
   };
 
-  // Move project up in order
   const moveProjectUp = (index: number) => {
     if (index === 0) return; // Already at the top
     
@@ -202,7 +189,6 @@ const AdminProjects = () => {
     setOrderChanged(true);
   };
 
-  // Move project down in order
   const moveProjectDown = (index: number) => {
     if (index === displayedProjects.length - 1) return; // Already at the bottom
     
@@ -212,12 +198,10 @@ const AdminProjects = () => {
     setOrderChanged(true);
   };
 
-  // Save the new order to the database
   const saveNewOrder = async () => {
     try {
       setLoading(true);
       
-      // Update each project with its new display_order
       const updates = displayedProjects.map((project, index) => {
         return supabase
           .from('projects')
@@ -276,7 +260,6 @@ const AdminProjects = () => {
           </div>
         </div>
 
-        {/* Search input */}
         <div className="mb-6 relative">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

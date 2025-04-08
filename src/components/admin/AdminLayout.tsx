@@ -53,7 +53,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[250px] sm:w-[300px] px-0">
+      <SheetContent side="left" className="w-[250px] sm:w-[300px] px-0 z-[100]">
         <div className="flex flex-col h-full">
           <div className="py-4 border-b">
             <div className="flex items-center gap-2 px-4">
