@@ -1,8 +1,8 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { Search, Users, FileText, BarChart4, Truck, Factory, Check, Clock } from 'lucide-react';
+import { Search, Users, FileText, BarChart4, Truck, Factory, Check, Clock, Settings } from 'lucide-react';
 import ContactDialog from '@/components/contact/ContactDialog';
 
 const Services = () => {
@@ -144,6 +144,21 @@ const Services = () => {
                   </div>
                 </li>
               </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Добавляем изображение перед блоком "Наш комплексный подход" */}
+      <section className="py-8 md:py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="rounded-lg overflow-hidden shadow-xl animate-on-scroll">
+              <img 
+                src="/lovable-uploads/6de4b6f4-d6c0-4ba6-8ffa-e50447c3f618.png" 
+                alt="Профессиональное управление проектами" 
+                className="w-full h-auto object-cover"
+              />
             </div>
           </div>
         </div>

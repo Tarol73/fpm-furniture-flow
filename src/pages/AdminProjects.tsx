@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,9 +15,22 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit2, Plus, Trash2, Search, ArrowUp, ArrowDown, Save, X } from 'lucide-react';
+import { Edit2, Plus, Trash2, Search, ArrowUp, ArrowDown, Save, X, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+
+interface DisplayColumn {
+  id: string;
+  label: string;
+  visible: boolean;
+}
 
 const AdminProjects = () => {
   const { toast } = useToast();
@@ -30,6 +44,16 @@ const AdminProjects = () => {
   const [savingOrder, setSavingOrder] = useState(false);
   const [editingOrderId, setEditingOrderId] = useState<number | null>(null);
   const [editingOrderValue, setEditingOrderValue] = useState<string>('');
+  const [displayColumns, setDisplayColumns] = useState<DisplayColumn[]>([
+    { id: 'order', label: 'Порядок', visible: true },
+    { id: 'id', label: 'ID', visible: true },
+    { id: 'photo', label: 'Фото', visible: false },
+    { id: 'title', label: 'Название', visible: true },
+    { id: 'categories', label: 'Категории', visible: false },
+    { id: 'year', label: 'Год', visible: true },
+    { id: 'location', label: 'Локация', visible: true },
+    { id: 'actions', label: 'Действия', visible: true },
+  ]);
 
   useEffect(() => {
     const authStatus = localStorage.getItem('isAuthenticated');
@@ -39,6 +63,18 @@ const AdminProjects = () => {
     }
     
     setIsAuthenticated(true);
+    
+    // Загрузка настроек отображения колонок из localStorage
+    const savedColumns = localStorage.getItem('projectDisplayColumns');
+    if (savedColumns) {
+      try {
+        const parsedColumns = JSON.parse(savedColumns);
+        setDisplayColumns(parsedColumns);
+      } catch (e) {
+        console.error('Error parsing saved columns:', e);
+      }
+    }
+    
     fetchProjects();
   }, [navigate]);
 
@@ -112,7 +148,7 @@ const AdminProjects = () => {
   };
 
   const handleDeleteProject = async (projectId: number) => {
-    if (!window.confirm("В�� уверены, что хотите удалить этот проект? Это действие невозможно отменить.")) {
+    if (!window.confirm("Вы уверены, что хотите удалить этот проект? Это действие невозможно отменить.")) {
       return;
     }
     
@@ -349,6 +385,17 @@ const AdminProjects = () => {
     setEditingOrderValue('');
   };
 
+  // Обработчик для изменения видимости колонок
+  const handleColumnToggle = (columnId: string) => {
+    const updatedColumns = displayColumns.map(column => 
+      column.id === columnId ? { ...column, visible: !column.visible } : column
+    );
+    setDisplayColumns(updatedColumns);
+    
+    // Сохраняем настройки в localStorage
+    localStorage.setItem('projectDisplayColumns', JSON.stringify(updatedColumns));
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -379,8 +426,8 @@ const AdminProjects = () => {
           </div>
         </div>
 
-        <div className="mb-6 relative">
-          <div className="relative">
+        <div className="mb-6 flex justify-between items-center">
+          <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               placeholder="Поиск по названию, локации или категории"
@@ -389,6 +436,32 @@ const AdminProjects = () => {
               className="pl-10"
             />
           </div>
+          
+          {/* Настройки отображения колонок */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon" className="ml-2">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80" align="end">
+              <div className="space-y-4">
+                <h4 className="font-medium">Настройка отображения колонок</h4>
+                <div className="space-y-2">
+                  {displayColumns.map(column => (
+                    <div key={column.id} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`column-${column.id}`} 
+                        checked={column.visible}
+                        onCheckedChange={() => handleColumnToggle(column.id)}
+                      />
+                      <Label htmlFor={`column-${column.id}`}>{column.label}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
         
         {loading && !savingOrder && !orderChanged ? (
@@ -404,125 +477,164 @@ const AdminProjects = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[80px]">Порядок</TableHead>
-                  <TableHead className="w-[80px]">ID</TableHead>
-                  <TableHead className="w-[80px]">Фото</TableHead>
-                  <TableHead>Название</TableHead>
-                  <TableHead>Категории</TableHead>
-                  <TableHead>Год</TableHead>
-                  <TableHead>Локация</TableHead>
-                  <TableHead className="text-right">Действия</TableHead>
+                  {displayColumns.find(col => col.id === 'order')?.visible && (
+                    <TableHead className="w-[80px]">Порядок</TableHead>
+                  )}
+                  {displayColumns.find(col => col.id === 'id')?.visible && (
+                    <TableHead className="w-[80px]">ID</TableHead>
+                  )}
+                  {displayColumns.find(col => col.id === 'photo')?.visible && (
+                    <TableHead className="w-[80px]">Фото</TableHead>
+                  )}
+                  {displayColumns.find(col => col.id === 'title')?.visible && (
+                    <TableHead>Название</TableHead>
+                  )}
+                  {displayColumns.find(col => col.id === 'categories')?.visible && (
+                    <TableHead>Категории</TableHead>
+                  )}
+                  {displayColumns.find(col => col.id === 'year')?.visible && (
+                    <TableHead>Год</TableHead>
+                  )}
+                  {displayColumns.find(col => col.id === 'location')?.visible && (
+                    <TableHead>Локация</TableHead>
+                  )}
+                  {displayColumns.find(col => col.id === 'actions')?.visible && (
+                    <TableHead className="text-right">Действия</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {displayedProjects.map((project, index) => (
                   <TableRow key={project.id}>
-                    <TableCell>
-                      {editingOrderId === project.id ? (
-                        <div className="flex items-center space-x-2">
-                          <Input 
-                            value={editingOrderValue}
-                            onChange={handleOrderValueChange}
-                            className="w-16 h-8 text-sm"
-                            autoFocus
-                          />
-                          <div className="flex flex-col gap-1">
+                    {displayColumns.find(col => col.id === 'order')?.visible && (
+                      <TableCell>
+                        {editingOrderId === project.id ? (
+                          <div className="flex items-center space-x-2">
+                            <Input 
+                              value={editingOrderValue}
+                              onChange={handleOrderValueChange}
+                              className="w-16 h-8 text-sm"
+                              autoFocus
+                            />
+                            <div className="flex flex-col gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => saveOrderValue(project.id)}
+                                className="h-6 w-6 p-0"
+                                title="Сохранить"
+                              >
+                                <Save className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={cancelEditingOrder}
+                                className="h-6 w-6 p-0"
+                                title="Отменить"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center space-y-1">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => saveOrderValue(project.id)}
+                              onClick={() => moveProjectUp(index)}
+                              disabled={index === 0 || savingOrder}
                               className="h-6 w-6 p-0"
-                              title="Сохранить"
                             >
-                              <Save className="h-4 w-4" />
+                              <ArrowUp className="h-4 w-4" />
                             </Button>
+                            <span 
+                              className="text-sm cursor-pointer hover:text-fpm-teal"
+                              onClick={() => startEditingOrder(project.id, project.display_order || index + 1)}
+                              title="Нажмите для редактирования"
+                            >
+                              {project.display_order || index + 1}
+                            </span>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={cancelEditingOrder}
+                              onClick={() => moveProjectDown(index)}
+                              disabled={index === displayedProjects.length - 1 || savingOrder}
                               className="h-6 w-6 p-0"
-                              title="Отменить"
                             >
-                              <X className="h-4 w-4" />
+                              <ArrowDown className="h-4 w-4" />
                             </Button>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center space-y-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => moveProjectUp(index)}
-                            disabled={index === 0 || savingOrder}
-                            className="h-6 w-6 p-0"
-                          >
-                            <ArrowUp className="h-4 w-4" />
-                          </Button>
-                          <span 
-                            className="text-sm cursor-pointer hover:text-fpm-teal"
-                            onClick={() => startEditingOrder(project.id, project.display_order || index + 1)}
-                            title="Нажмите для редактирования"
-                          >
-                            {project.display_order || index + 1}
-                          </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => moveProjectDown(index)}
-                            disabled={index === displayedProjects.length - 1 || savingOrder}
-                            className="h-6 w-6 p-0"
-                          >
-                            <ArrowDown className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium">{project.id}</TableCell>
-                    <TableCell>
-                      <div className="h-12 w-12 rounded overflow-hidden bg-gray-100">
-                        <img 
-                          src={project.mainImage} 
-                          alt={project.title} 
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell>{project.title}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {project.categories && project.categories.length > 0 ? (
-                          project.categories.map((category, index) => (
-                            <Badge key={index} variant="outline" className="bg-gray-100 text-xs">
-                              {category.name}
-                            </Badge>
-                          ))
-                        ) : (
-                          <span className="text-gray-500 text-sm">{project.category}</span>
                         )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{project.year}</TableCell>
-                    <TableCell>{project.location}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditProject(project.id)}
-                          disabled={savingOrder}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteProject(project.id)}
-                          disabled={savingOrder}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                      </TableCell>
+                    )}
+                    
+                    {displayColumns.find(col => col.id === 'id')?.visible && (
+                      <TableCell className="font-medium">{project.id}</TableCell>
+                    )}
+                    
+                    {displayColumns.find(col => col.id === 'photo')?.visible && (
+                      <TableCell>
+                        <div className="h-12 w-12 rounded overflow-hidden bg-gray-100">
+                          <img 
+                            src={project.mainImage} 
+                            alt={project.title} 
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      </TableCell>
+                    )}
+                    
+                    {displayColumns.find(col => col.id === 'title')?.visible && (
+                      <TableCell>{project.title}</TableCell>
+                    )}
+                    
+                    {displayColumns.find(col => col.id === 'categories')?.visible && (
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {project.categories && project.categories.length > 0 ? (
+                            project.categories.map((category, index) => (
+                              <Badge key={index} variant="outline" className="bg-gray-100 text-xs">
+                                {category.name}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-gray-500 text-sm">{project.category}</span>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
+                    
+                    {displayColumns.find(col => col.id === 'year')?.visible && (
+                      <TableCell>{project.year}</TableCell>
+                    )}
+                    
+                    {displayColumns.find(col => col.id === 'location')?.visible && (
+                      <TableCell>{project.location}</TableCell>
+                    )}
+                    
+                    {displayColumns.find(col => col.id === 'actions')?.visible && (
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditProject(project.id)}
+                            disabled={savingOrder}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteProject(project.id)}
+                            disabled={savingOrder}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

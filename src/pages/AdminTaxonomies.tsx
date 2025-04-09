@@ -1,18 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { 
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle 
-} from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Edit, Save, Trash2, Plus, X } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Table, 
   TableBody, 
@@ -21,49 +15,39 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Category, fetchCategories, createCategory, updateCategory, deleteCategory } from '@/services/categoryService';
-import { Tag, fetchTags, createTag, updateTag, deleteTag } from '@/services/tagService';
-import { Plus, Pencil, Trash2, Save, X } from 'lucide-react';
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
+  fetchCategories, 
+  createCategory, 
+  updateCategory, 
+  deleteCategory,
+  Category 
+} from '@/services/categoryService';
+import { 
+  fetchTags, 
+  createTag, 
+  updateTag, 
+  deleteTag,
+  Tag 
+} from '@/services/tagService';
 
 const AdminTaxonomies = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState('categories');
   
-  // Состояние для категорий
+  // Categories state
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [newCategoryName, setNewCategoryName] = useState('');
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
   const [editingCategoryName, setEditingCategoryName] = useState('');
-  const [savingCategory, setSavingCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [addingCategory, setAddingCategory] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   
-  // Состояние для тегов
+  // Tags state
   const [tags, setTags] = useState<Tag[]>([]);
-  const [loadingTags, setLoadingTags] = useState(true);
+  const [newTagName, setNewTagName] = useState('');
   const [editingTagId, setEditingTagId] = useState<number | null>(null);
   const [editingTagName, setEditingTagName] = useState('');
-  const [savingTag, setSavingTag] = useState(false);
-  const [newTagName, setNewTagName] = useState('');
-  const [addingTag, setAddingTag] = useState(false);
-  
-  // Диалоги подтверждения удаления
-  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
-  const [deletingTag, setDeletingTag] = useState<Tag | null>(null);
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const [confirmDeleteType, setConfirmDeleteType] = useState<'category' | 'tag'>('category');
-  const [deleting, setDeleting] = useState(false);
+  const [loadingTags, setLoadingTags] = useState(true);
 
   useEffect(() => {
     const authStatus = localStorage.getItem('isAuthenticated');
@@ -73,18 +57,17 @@ const AdminTaxonomies = () => {
     }
     
     setIsAuthenticated(true);
-    loadCategories();
-    loadTags();
+    fetchCategoriesData();
+    fetchTagsData();
   }, [navigate]);
-
-  // Загрузка данных
-  const loadCategories = async () => {
+  
+  const fetchCategoriesData = async () => {
     try {
       setLoadingCategories(true);
-      const categoriesData = await fetchCategories();
-      setCategories(categoriesData);
+      const data = await fetchCategories();
+      setCategories(data);
     } catch (error) {
-      console.error('Error loading categories:', error);
+      console.error('Error fetching categories:', error);
       toast({
         title: "Ошибка",
         description: "Не удалось загрузить категории",
@@ -94,14 +77,14 @@ const AdminTaxonomies = () => {
       setLoadingCategories(false);
     }
   };
-
-  const loadTags = async () => {
+  
+  const fetchTagsData = async () => {
     try {
       setLoadingTags(true);
-      const tagsData = await fetchTags();
-      setTags(tagsData);
+      const data = await fetchTags();
+      setTags(data);
     } catch (error) {
-      console.error('Error loading tags:', error);
+      console.error('Error fetching tags:', error);
       toast({
         title: "Ошибка",
         description: "Не удалось загрузить теги",
@@ -111,48 +94,48 @@ const AdminTaxonomies = () => {
       setLoadingTags(false);
     }
   };
-
-  // Функции для работы с категориями
-  const handleAddCategory = async () => {
+  
+  // Category actions
+  const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return;
     
     try {
-      setAddingCategory(true);
-      const newCategory = await createCategory(newCategoryName.trim());
-      setCategories([...categories, newCategory]);
+      await createCategory(newCategoryName);
       setNewCategoryName('');
-      
+      fetchCategoriesData();
       toast({
         title: "Успех",
         description: "Категория успешно создана",
         variant: "default",
       });
     } catch (error) {
-      console.error('Error adding category:', error);
+      console.error('Error creating category:', error);
       toast({
         title: "Ошибка",
         description: "Не удалось создать категорию",
         variant: "destructive",
       });
-    } finally {
-      setAddingCategory(false);
     }
   };
 
-  const handleUpdateCategory = async (id: number) => {
+  const handleStartEditCategory = (category: Category) => {
+    setEditingCategoryId(category.id);
+    setEditingCategoryName(category.name);
+  };
+
+  const handleCancelEditCategory = () => {
+    setEditingCategoryId(null);
+    setEditingCategoryName('');
+  };
+
+  const handleSaveEditCategory = async (id: number) => {
     if (!editingCategoryName.trim()) return;
     
     try {
-      setSavingCategory(true);
-      const updatedCategory = await updateCategory(id, editingCategoryName.trim());
-      
-      setCategories(categories.map(category => 
-        category.id === id ? updatedCategory : category
-      ));
-      
+      await updateCategory(id, editingCategoryName);
       setEditingCategoryId(null);
       setEditingCategoryName('');
-      
+      fetchCategoriesData();
       toast({
         title: "Успех",
         description: "Категория успешно обновлена",
@@ -165,97 +148,73 @@ const AdminTaxonomies = () => {
         description: "Не удалось обновить категорию",
         variant: "destructive",
       });
-    } finally {
-      setSavingCategory(false);
     }
   };
 
-  const startEditCategory = (category: Category) => {
-    setEditingCategoryId(category.id);
-    setEditingCategoryName(category.name);
-  };
-
-  const cancelEditCategory = () => {
-    setEditingCategoryId(null);
-    setEditingCategoryName('');
-  };
-
-  const showDeleteCategoryConfirm = (category: Category) => {
-    setDeletingCategory(category);
-    setConfirmDeleteType('category');
-    setConfirmDeleteOpen(true);
-  };
-
-  const handleDeleteCategory = async () => {
-    if (!deletingCategory) return;
+  const handleDeleteCategory = async (id: number) => {
+    if (!window.confirm("Вы уверены, что хотите удалить эту категорию?")) {
+      return;
+    }
     
     try {
-      setDeleting(true);
-      await deleteCategory(deletingCategory.id);
-      
-      setCategories(categories.filter(category => category.id !== deletingCategory.id));
-      
+      await deleteCategory(id);
+      fetchCategoriesData();
       toast({
         title: "Успех",
         description: "Категория успешно удалена",
         variant: "default",
       });
-      
-      setConfirmDeleteOpen(false);
-      setDeletingCategory(null);
     } catch (error) {
       console.error('Error deleting category:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось удалить категорию",
+        description: "Не удалось удалить категорию. Возможно, она используется в проектах.",
         variant: "destructive",
       });
-    } finally {
-      setDeleting(false);
     }
   };
-
-  // Функции для работы с тегами
-  const handleAddTag = async () => {
+  
+  // Tag actions
+  const handleCreateTag = async () => {
     if (!newTagName.trim()) return;
     
     try {
-      setAddingTag(true);
-      const newTag = await createTag(newTagName.trim());
-      setTags([...tags, newTag]);
+      await createTag(newTagName);
       setNewTagName('');
-      
+      fetchTagsData();
       toast({
         title: "Успех",
         description: "Тег успешно создан",
         variant: "default",
       });
     } catch (error) {
-      console.error('Error adding tag:', error);
+      console.error('Error creating tag:', error);
       toast({
         title: "Ошибка",
         description: "Не удалось создать тег",
         variant: "destructive",
       });
-    } finally {
-      setAddingTag(false);
     }
   };
 
-  const handleUpdateTag = async (id: number) => {
+  const handleStartEditTag = (tag: Tag) => {
+    setEditingTagId(tag.id);
+    setEditingTagName(tag.name);
+  };
+
+  const handleCancelEditTag = () => {
+    setEditingTagId(null);
+    setEditingTagName('');
+  };
+
+  const handleSaveEditTag = async (id: number) => {
     if (!editingTagName.trim()) return;
     
     try {
-      setSavingTag(true);
-      const updatedTag = await updateTag(id, editingTagName.trim());
-      
-      setTags(tags.map(tag => 
-        tag.id === id ? updatedTag : tag
-      ));
-      
+      await updateTag(id, editingTagName);
       setEditingTagId(null);
       setEditingTagName('');
-      
+      fetchTagsData();
       toast({
         title: "Успех",
         description: "Тег успешно обновлен",
@@ -268,53 +227,29 @@ const AdminTaxonomies = () => {
         description: "Не удалось обновить тег",
         variant: "destructive",
       });
-    } finally {
-      setSavingTag(false);
     }
   };
 
-  const startEditTag = (tag: Tag) => {
-    setEditingTagId(tag.id);
-    setEditingTagName(tag.name);
-  };
-
-  const cancelEditTag = () => {
-    setEditingTagId(null);
-    setEditingTagName('');
-  };
-
-  const showDeleteTagConfirm = (tag: Tag) => {
-    setDeletingTag(tag);
-    setConfirmDeleteType('tag');
-    setConfirmDeleteOpen(true);
-  };
-
-  const handleDeleteTag = async () => {
-    if (!deletingTag) return;
+  const handleDeleteTag = async (id: number) => {
+    if (!window.confirm("Вы уверены, что хотите удалить этот тег?")) {
+      return;
+    }
     
     try {
-      setDeleting(true);
-      await deleteTag(deletingTag.id);
-      
-      setTags(tags.filter(tag => tag.id !== deletingTag.id));
-      
+      await deleteTag(id);
+      fetchTagsData();
       toast({
         title: "Успех",
         description: "Тег успешно удален",
         variant: "default",
       });
-      
-      setConfirmDeleteOpen(false);
-      setDeletingTag(null);
     } catch (error) {
       console.error('Error deleting tag:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось удалить тег",
+        description: "Не удалось удалить тег. Возможно, он используется в проектах.",
         variant: "destructive",
       });
-    } finally {
-      setDeleting(false);
     }
   };
 
@@ -324,257 +259,200 @@ const AdminTaxonomies = () => {
 
   return (
     <AdminLayout>
-      <div>
-        <h2 className="text-2xl font-light text-fpm-blue mb-6">Управление категориями и тегами</h2>
+      <div className="space-y-6">
+        <h2 className="text-2xl font-light text-fpm-blue">Управление категориями и тегами</h2>
         
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="categories">Категории</TabsTrigger>
-            <TabsTrigger value="tags">Теги</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="categories">
-            <Card>
-              <CardHeader>
-                <CardTitle>Категории проектов</CardTitle>
-                <CardDescription>
-                  Управление категориями для фильтрации проектов
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2 mb-6">
-                  <Input
-                    placeholder="Название новой категории"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
-                  />
-                  <Button 
-                    onClick={handleAddCategory} 
-                    disabled={!newCategoryName.trim() || addingCategory}
-                    className="bg-fpm-blue hover:bg-fpm-blue/90 text-white"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    {addingCategory ? 'Добавление...' : 'Добавить'}
-                  </Button>
-                </div>
-                
-                {loadingCategories ? (
-                  <div className="text-center py-4">
-                    <p>Загрузка категорий...</p>
-                  </div>
-                ) : categories.length === 0 ? (
-                  <div className="text-center py-4 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500">Нет доступных категорий</p>
-                  </div>
-                ) : (
-                  <div className="border rounded-md">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Название</TableHead>
-                          <TableHead className="w-[120px] text-right">Действия</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {categories.map((category) => (
-                          <TableRow key={category.id}>
-                            <TableCell>
-                              {editingCategoryId === category.id ? (
-                                <Input
-                                  value={editingCategoryName}
-                                  onChange={(e) => setEditingCategoryName(e.target.value)}
-                                  onKeyDown={(e) => e.key === 'Enter' && handleUpdateCategory(category.id)}
-                                />
-                              ) : (
-                                category.name
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {editingCategoryId === category.id ? (
-                                <div className="flex justify-end space-x-1">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => cancelEditCategory()}
-                                    disabled={savingCategory}
-                                  >
-                                    <X className="h-4 w-4 text-gray-500" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => handleUpdateCategory(category.id)}
-                                    disabled={!editingCategoryName.trim() || savingCategory}
-                                  >
-                                    <Save className="h-4 w-4 text-fpm-blue" />
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="flex justify-end space-x-1">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => startEditCategory(category)}
-                                  >
-                                    <Pencil className="h-4 w-4 text-fpm-blue" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => showDeleteCategoryConfirm(category)}
-                                  >
-                                    <Trash2 className="h-4 w-4 text-red-500" />
-                                  </Button>
-                                </div>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="tags">
-            <Card>
-              <CardHeader>
-                <CardTitle>Теги проектов</CardTitle>
-                <CardDescription>
-                  Управление тегами для проектов
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2 mb-6">
-                  <Input
-                    placeholder="Название нового тега"
-                    value={newTagName}
-                    onChange={(e) => setNewTagName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
-                  />
-                  <Button 
-                    onClick={handleAddTag} 
-                    disabled={!newTagName.trim() || addingTag}
-                    className="bg-fpm-blue hover:bg-fpm-blue/90 text-white"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    {addingTag ? 'Добавление...' : 'Добавить'}
-                  </Button>
-                </div>
-                
-                {loadingTags ? (
-                  <div className="text-center py-4">
-                    <p>Загрузка тегов...</p>
-                  </div>
-                ) : tags.length === 0 ? (
-                  <div className="text-center py-4 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500">Нет доступных тегов</p>
-                  </div>
-                ) : (
-                  <div className="border rounded-md">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Название</TableHead>
-                          <TableHead className="w-[120px] text-right">Действия</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {tags.map((tag) => (
-                          <TableRow key={tag.id}>
-                            <TableCell>
-                              {editingTagId === tag.id ? (
-                                <Input
-                                  value={editingTagName}
-                                  onChange={(e) => setEditingTagName(e.target.value)}
-                                  onKeyDown={(e) => e.key === 'Enter' && handleUpdateTag(tag.id)}
-                                />
-                              ) : (
-                                tag.name
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {editingTagId === tag.id ? (
-                                <div className="flex justify-end space-x-1">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => cancelEditTag()}
-                                    disabled={savingTag}
-                                  >
-                                    <X className="h-4 w-4 text-gray-500" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => handleUpdateTag(tag.id)}
-                                    disabled={!editingTagName.trim() || savingTag}
-                                  >
-                                    <Save className="h-4 w-4 text-fpm-blue" />
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className="flex justify-end space-x-1">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => startEditTag(tag)}
-                                  >
-                                    <Pencil className="h-4 w-4 text-fpm-blue" />
-                                  </Button>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => showDeleteTagConfirm(tag)}
-                                  >
-                                    <Trash2 className="h-4 w-4 text-red-500" />
-                                  </Button>
-                                </div>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        {/* Categories Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Категории</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4 flex gap-2">
+              <Input
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Новая категория"
+                className="max-w-md"
+              />
+              <Button onClick={handleCreateCategory}>
+                <Plus className="h-4 w-4 mr-2" />
+                Добавить
+              </Button>
+            </div>
+            
+            {loadingCategories ? (
+              <div className="text-center py-4">
+                <p>Загрузка категорий...</p>
+              </div>
+            ) : categories.length === 0 ? (
+              <div className="text-center py-4 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">Категории отсутствуют. Создайте первую категорию.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px]">ID</TableHead>
+                    <TableHead>Название</TableHead>
+                    <TableHead className="text-right">Действия</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {categories.map((category) => (
+                    <TableRow key={category.id}>
+                      <TableCell>{category.id}</TableCell>
+                      <TableCell>
+                        {editingCategoryId === category.id ? (
+                          <Input 
+                            value={editingCategoryName} 
+                            onChange={(e) => setEditingCategoryName(e.target.value)} 
+                            className="max-w-md"
+                          />
+                        ) : (
+                          category.name
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {editingCategoryId === category.id ? (
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              onClick={() => handleSaveEditCategory(category.id)} 
+                              variant="outline" 
+                              size="sm"
+                            >
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              onClick={handleCancelEditCategory} 
+                              variant="outline" 
+                              size="sm"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              onClick={() => handleStartEditCategory(category)} 
+                              variant="outline" 
+                              size="sm"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              onClick={() => handleDeleteCategory(category.id)} 
+                              variant="destructive" 
+                              size="sm"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
         
-        {/* Диалог подтверждения удаления */}
-        <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Подтверждение удаления</DialogTitle>
-              <DialogDescription>
-                {confirmDeleteType === 'category' 
-                  ? 'Вы действительно хотите удалить эту категорию? Это действие нельзя отменить. Категория будет удалена из всех связанных проектов.'
-                  : 'Вы действительно хотите удалить этот тег? Это действие нельзя отменить. Тег будет удален из всех связанных проектов.'}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setConfirmDeleteOpen(false)}
-                disabled={deleting}
-              >
-                Отмена
+        {/* Tags Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Теги</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4 flex gap-2">
+              <Input
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                placeholder="Новый тег"
+                className="max-w-md"
+              />
+              <Button onClick={handleCreateTag}>
+                <Plus className="h-4 w-4 mr-2" />
+                Добавить
               </Button>
-              <Button
-                variant="destructive"
-                onClick={confirmDeleteType === 'category' ? handleDeleteCategory : handleDeleteTag}
-                disabled={deleting}
-              >
-                {deleting ? 'Удаление...' : 'Удалить'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </div>
+            
+            {loadingTags ? (
+              <div className="text-center py-4">
+                <p>Загрузка тегов...</p>
+              </div>
+            ) : tags.length === 0 ? (
+              <div className="text-center py-4 bg-gray-50 rounded-lg">
+                <p className="text-gray-500">Теги отсутствуют. Создайте первый тег.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px]">ID</TableHead>
+                    <TableHead>Название</TableHead>
+                    <TableHead className="text-right">Действия</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {tags.map((tag) => (
+                    <TableRow key={tag.id}>
+                      <TableCell>{tag.id}</TableCell>
+                      <TableCell>
+                        {editingTagId === tag.id ? (
+                          <Input 
+                            value={editingTagName} 
+                            onChange={(e) => setEditingTagName(e.target.value)} 
+                            className="max-w-md"
+                          />
+                        ) : (
+                          tag.name
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {editingTagId === tag.id ? (
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              onClick={() => handleSaveEditTag(tag.id)} 
+                              variant="outline" 
+                              size="sm"
+                            >
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              onClick={handleCancelEditTag} 
+                              variant="outline" 
+                              size="sm"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              onClick={() => handleStartEditTag(tag)} 
+                              variant="outline" 
+                              size="sm"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              onClick={() => handleDeleteTag(tag.id)} 
+                              variant="destructive" 
+                              size="sm"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminLayout>
   );
