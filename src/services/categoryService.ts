@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Category {
@@ -20,6 +19,24 @@ export const fetchCategories = async (): Promise<Category[]> => {
 };
 
 export const createCategory = async (name: string): Promise<Category> => {
+  // First check if category with this name already exists
+  const { data: existingCategory, error: checkError } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('name', name)
+    .maybeSingle();
+    
+  if (checkError) {
+    console.error('Error checking category existence:', checkError);
+    throw new Error('Не удалось проверить существование категории');
+  }
+  
+  if (existingCategory) {
+    console.error('Category already exists with name:', name);
+    throw new Error('Категория с таким названием уже существует');
+  }
+  
+  // If no existing category, proceed with creation
   const { data, error } = await supabase
     .from('categories')
     .insert([{ name }])
@@ -34,18 +51,42 @@ export const createCategory = async (name: string): Promise<Category> => {
 };
 
 export const updateCategory = async (id: number, name: string): Promise<Category> => {
-  const { data, error } = await supabase
-    .from('categories')
-    .update({ name })
-    .eq('id', id)
-    .select()
-    .single();
+  try {
+    // First check if category with new name already exists (but not the same category)
+    const { data: existingCategoryWithName, error: nameCheckError } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('name', name)
+      .neq('id', id)
+      .maybeSingle();
+      
+    if (nameCheckError) {
+      console.error('Error checking category name existence:', nameCheckError);
+      throw new Error('Не удалось проверить существование категории с таким названием');
+    }
+    
+    if (existingCategoryWithName) {
+      console.error('Another category already exists with name:', name);
+      throw new Error('Категория с таким названием уже существует');
+    }
+    
+    // Now update the category
+    const { data, error } = await supabase
+      .from('categories')
+      .update({ name })
+      .eq('id', id)
+      .select()
+      .single();
   
-  if (error) {
-    throw new Error(`Failed to update category: ${error.message}`);
+    if (error) {
+      throw new Error(`Failed to update category: ${error.message}`);
+    }
+  
+    return data;
+  } catch (error) {
+    console.error('Exception in updateCategory:', error);
+    throw error;
   }
-  
-  return data;
 };
 
 export const deleteCategory = async (id: number): Promise<void> => {

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Tag {
@@ -22,7 +21,24 @@ export const fetchTags = async (): Promise<Tag[]> => {
 };
 
 export const createTag = async (name: string): Promise<Tag> => {
-  // Call the RPC function without type parameters since they're already defined in types.ts
+  // First check if tag with this name already exists
+  const { data: existingTag, error: checkError } = await supabase
+    .from('tags')
+    .select('*')
+    .eq('name', name)
+    .maybeSingle();
+    
+  if (checkError) {
+    console.error('Error checking tag existence:', checkError);
+    throw new Error('Не удалось проверить существование тега');
+  }
+  
+  if (existingTag) {
+    console.error('Tag already exists with name:', name);
+    throw new Error('Тег с таким названием уже существует');
+  }
+  
+  // If no existing tag, proceed with creation
   const { error } = await supabase
     .rpc('create_tag', { tag_name: name });
     
@@ -50,7 +66,25 @@ export const updateTag = async (id: number, name: string): Promise<Tag> => {
   console.log('Updating tag with ID:', id, 'New name:', name);
   
   try {
-    // First check if the tag exists
+    // First check if tag with new name already exists (but not the same tag)
+    const { data: existingTagWithName, error: nameCheckError } = await supabase
+      .from('tags')
+      .select('*')
+      .eq('name', name)
+      .neq('id', id)
+      .maybeSingle();
+      
+    if (nameCheckError) {
+      console.error('Error checking tag name existence:', nameCheckError);
+      throw new Error('Не удалось проверить существование тега с таким названием');
+    }
+    
+    if (existingTagWithName) {
+      console.error('Another tag already exists with name:', name);
+      throw new Error('Тег с таким названием уже существует');
+    }
+    
+    // Then check if the tag we want to update exists
     const { data: existingTag, error: checkError } = await supabase
       .from('tags')
       .select('*')
