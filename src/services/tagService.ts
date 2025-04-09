@@ -103,9 +103,22 @@ export const getProjectTags = async (projectId: number): Promise<Tag[]> => {
 
 export const updateProjectTags = async (projectId: number, tagIds: number[]): Promise<void> => {
   try {
-    // Add more detailed logging to help debugging
+    // Enhanced logging for debugging
     console.log('Updating project tags:', { projectId, tagIds });
     
+    // First, check if the project exists
+    const { data: projectExists, error: projectError } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('id', projectId)
+      .single();
+      
+    if (projectError) {
+      console.error('Error verifying project existence:', projectError);
+      throw new Error('Проект не найден');
+    }
+    
+    // Delete existing relationships first
     const { error: deleteError } = await supabase
       .from('project_tags')
       .delete()
@@ -116,7 +129,9 @@ export const updateProjectTags = async (projectId: number, tagIds: number[]): Pr
       throw deleteError;
     }
     
+    // Only insert new relationships if there are tags to add
     if (tagIds.length > 0) {
+      // Prepare the tag relations
       const tagRelations = tagIds.map(tagId => ({
         project_id: projectId,
         tag_id: tagId
@@ -124,9 +139,13 @@ export const updateProjectTags = async (projectId: number, tagIds: number[]): Pr
       
       console.log('Inserting new tag relations:', tagRelations);
       
+      // Insert with upsert option to avoid duplicates
       const { error: insertError } = await supabase
         .from('project_tags')
-        .insert(tagRelations);
+        .upsert(tagRelations, { 
+          onConflict: 'project_id,tag_id',
+          ignoreDuplicates: true
+        });
         
       if (insertError) {
         console.error('Error inserting project tags:', insertError);
