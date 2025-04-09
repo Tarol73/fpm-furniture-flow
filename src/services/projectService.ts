@@ -70,19 +70,20 @@ export const fetchProjectById = async (id: string): Promise<ExtendedProject> => 
 };
 
 export const fetchRelatedProjects = async (projectId: number, category: string): Promise<ExtendedProject[]> => {
-  // First try to get related projects by common categories
-  // Use string literal for the table name to avoid type issues
+  // Сначала получаем категории текущего проекта
   const { data: projectCategories } = await supabase
     .from('project_categories')
     .select('category_id')
     .eq('project_id', projectId);
   
-  let projectsToEnhance = [];
+  // Список проектов для отображения
+  let relatedProjects: ExtendedProject[] = [];
   
+  // Если у текущего проекта есть категории
   if (projectCategories && projectCategories.length > 0) {
     const categoryIds = projectCategories.map(pc => pc.category_id);
     
-    // Get projects that share at least one category with this project
+    // Получаем проекты, которые имеют хотя бы одну общую категорию с текущим проектом
     const { data: relatedByCategory } = await supabase
       .from('project_categories')
       .select('project_id')
@@ -90,66 +91,81 @@ export const fetchRelatedProjects = async (projectId: number, category: string):
       .neq('project_id', projectId);
     
     if (relatedByCategory && relatedByCategory.length > 0) {
-      const relatedIds = [...new Set(relatedByCategory.map(r => r.project_id))].slice(0, 3);
+      // Отбираем уникальные ID проектов
+      const relatedProjectIds = [...new Set(relatedByCategory.map(r => r.project_id))];
       
-      const { data: relatedProjects } = await supabase
+      // Получаем данные проектов, но не больше 3-х
+      const { data: relatedProjectsData } = await supabase
         .from('projects')
         .select('*')
-        .in('id', relatedIds);
+        .in('id', relatedProjectIds)
+        .limit(3);
       
-      if (relatedProjects && relatedProjects.length > 0) {
-        projectsToEnhance = relatedProjects;
+      if (relatedProjectsData && relatedProjectsData.length > 0) {
+        // Получаем основные изображения для связанных проектов
+        const enhancedProjects = await enhanceProjectsWithImages(relatedProjectsData);
+        relatedProjects = enhancedProjects;
       }
     }
   }
   
-  // If we don't have enough related projects by category, fall back to general category field
-  if (projectsToEnhance.length < 3) {
-    const { data: relatedData } = await supabase
+  // Если у нас менее 3-х связанных проектов, добавляем проекты из той же категории
+  if (relatedProjects.length < 3) {
+    // Получаем все ID проектов, которые у нас уже есть
+    const existingProjectIds = [projectId, ...relatedProjects.map(p => p.id)];
+    
+    const { data: additionalByCategory } = await supabase
       .from('projects')
       .select('*')
       .eq('category', category)
-      .neq('id', projectId)
-      .limit(3 - projectsToEnhance.length);
+      .not('id', 'in', `(${existingProjectIds.join(',')})`)
+      .limit(3 - relatedProjects.length);
     
-    if (relatedData && relatedData.length > 0) {
-      projectsToEnhance = [...projectsToEnhance, ...relatedData];
+    if (additionalByCategory && additionalByCategory.length > 0) {
+      const enhancedAdditional = await enhanceProjectsWithImages(additionalByCategory);
+      relatedProjects = [...relatedProjects, ...enhancedAdditional];
     }
   }
   
-  // If still not enough, get any projects
-  if (projectsToEnhance.length < 3) {
-    const { data: anyRelated } = await supabase
+  // Если все еще менее 3-х проектов, добавляем любые другие проекты
+  if (relatedProjects.length < 3) {
+    // Получаем все ID проектов, которые у нас уже есть
+    const existingProjectIds = [projectId, ...relatedProjects.map(p => p.id)];
+    
+    const { data: anyOtherProjects } = await supabase
       .from('projects')
       .select('*')
-      .neq('id', projectId)
-      .limit(3 - projectsToEnhance.length);
-      
-    if (anyRelated && anyRelated.length > 0) {
-      projectsToEnhance = [...projectsToEnhance, ...anyRelated];
+      .not('id', 'in', `(${existingProjectIds.join(',')})`)
+      .limit(3 - relatedProjects.length);
+    
+    if (anyOtherProjects && anyOtherProjects.length > 0) {
+      const enhancedOther = await enhanceProjectsWithImages(anyOtherProjects);
+      relatedProjects = [...relatedProjects, ...enhancedOther];
     }
   }
   
-  // If we have projects to enhance, fetch their main images
-  if (projectsToEnhance.length > 0) {
-    const relatedIds = projectsToEnhance.map(p => p.id);
-    
-    const { data: relatedPhotos } = await supabase
-      .from('project_photos')
-      .select('*')
-      .in('project_id', relatedIds)
-      .eq('is_main', true);
-    
-    const enhancedRelated = projectsToEnhance.map(relProj => {
-      const photo = relatedPhotos?.find(p => p.project_id === relProj.id);
-      return {
-        ...relProj,
-        mainImage: photo?.image_url || '/placeholder.svg'
-      };
-    });
-    
-    return enhancedRelated;
-  }
-  
-  return [];
+  return relatedProjects;
 };
+
+// Вспомогательная функция для добавления изображений к проектам
+async function enhanceProjectsWithImages(projects: any[]): Promise<ExtendedProject[]> {
+  if (projects.length === 0) return [];
+  
+  const projectIds = projects.map(p => p.id);
+  
+  // Получаем основные изображения для проектов
+  const { data: mainPhotos } = await supabase
+    .from('project_photos')
+    .select('*')
+    .in('project_id', projectIds)
+    .eq('is_main', true);
+  
+  // Добавляем изображения к проектам
+  return projects.map(project => {
+    const mainPhoto = mainPhotos?.find(p => p.project_id === project.id);
+    return {
+      ...project,
+      mainImage: mainPhoto?.image_url || '/placeholder.svg'
+    };
+  });
+}

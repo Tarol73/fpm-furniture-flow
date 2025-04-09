@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +29,8 @@ const AdminProjects = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [orderChanged, setOrderChanged] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
+  const [editingOrderId, setEditingOrderId] = useState<number | null>(null);
+  const [editingOrderValue, setEditingOrderValue] = useState<string>('');
 
   useEffect(() => {
     const authStatus = localStorage.getItem('isAuthenticated');
@@ -243,6 +246,79 @@ const AdminProjects = () => {
     }
   };
 
+  const startEditingOrder = (projectId: number, currentOrder: number) => {
+    setEditingOrderId(projectId);
+    setEditingOrderValue(String(currentOrder));
+  };
+
+  const handleOrderValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingOrderValue(e.target.value);
+  };
+
+  const saveOrderValue = async (projectId: number) => {
+    try {
+      // Проверяем, что значение является числом
+      const newOrder = parseInt(editingOrderValue, 10);
+      if (isNaN(newOrder) || newOrder < 1) {
+        toast({
+          title: "Ошибка",
+          description: "Значение должно быть положительным числом",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Обновляем порядок отображения в базе данных
+      const { error } = await supabase
+        .from('projects')
+        .update({ display_order: newOrder })
+        .eq('id', projectId);
+      
+      if (error) throw error;
+      
+      // Обновляем локальное состояние
+      const updatedProjects = projects.map(project => {
+        if (project.id === projectId) {
+          return { ...project, display_order: newOrder };
+        }
+        return project;
+      });
+      
+      setProjects(updatedProjects);
+      
+      // Сортировка проектов в соответствии с порядком отображения
+      const sortedProjects = [...updatedProjects].sort((a, b) => {
+        const aOrder = a.display_order || 0;
+        const bOrder = b.display_order || 0;
+        return aOrder - bOrder;
+      });
+      
+      setDisplayedProjects(sortedProjects);
+      
+      toast({
+        title: "Успех",
+        description: "Порядок отображения проекта обновлен",
+        variant: "default",
+      });
+      
+      // Сбрасываем состояние редактирования
+      setEditingOrderId(null);
+      setEditingOrderValue('');
+    } catch (error) {
+      console.error('Error updating project order:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить порядок отображения проекта",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const cancelEditingOrder = () => {
+    setEditingOrderId(null);
+    setEditingOrderValue('');
+  };
+
   if (!isAuthenticated) {
     return null;
   }
@@ -312,27 +388,64 @@ const AdminProjects = () => {
                 {displayedProjects.map((project, index) => (
                   <TableRow key={project.id}>
                     <TableCell>
-                      <div className="flex flex-col items-center space-y-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => moveProjectUp(index)}
-                          disabled={index === 0 || savingOrder}
-                          className="h-6 w-6 p-0"
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
-                        <span className="text-sm">{index + 1}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => moveProjectDown(index)}
-                          disabled={index === displayedProjects.length - 1 || savingOrder}
-                          className="h-6 w-6 p-0"
-                        >
-                          <ArrowDown className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {editingOrderId === project.id ? (
+                        <div className="flex items-center space-x-2">
+                          <Input 
+                            value={editingOrderValue}
+                            onChange={handleOrderValueChange}
+                            className="w-16 h-8 text-sm"
+                            autoFocus
+                          />
+                          <div className="flex flex-col gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => saveOrderValue(project.id)}
+                              className="h-6 w-6 p-0"
+                              title="Сохранить"
+                            >
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={cancelEditingOrder}
+                              className="h-6 w-6 p-0"
+                              title="Отменить"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center space-y-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => moveProjectUp(index)}
+                            disabled={index === 0 || savingOrder}
+                            className="h-6 w-6 p-0"
+                          >
+                            <ArrowUp className="h-4 w-4" />
+                          </Button>
+                          <span 
+                            className="text-sm cursor-pointer hover:text-fpm-teal"
+                            onClick={() => startEditingOrder(project.id, project.display_order || index + 1)}
+                            title="Нажмите для редактирования"
+                          >
+                            {project.display_order || index + 1}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => moveProjectDown(index)}
+                            disabled={index === displayedProjects.length - 1 || savingOrder}
+                            className="h-6 w-6 p-0"
+                          >
+                            <ArrowDown className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="font-medium">{project.id}</TableCell>
                     <TableCell>

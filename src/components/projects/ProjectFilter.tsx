@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 interface ProjectFilterProps {
   categories: string[];
-  activeFilter: string;
+  activeFilter: string[];
   onFilterChange: (category: string) => void;
 }
 
@@ -21,7 +21,7 @@ export const ProjectFilter: React.FC<ProjectFilterProps> = ({
           onClick={() => onFilterChange(category)}
           className={cn(
             "px-4 py-2 rounded-md text-sm font-light transition-colors",
-            activeFilter === category
+            activeFilter.includes(category)
               ? "bg-fpm-teal text-white"
               : "bg-gray-100 text-gray-600 hover:bg-gray-200"
           )}
