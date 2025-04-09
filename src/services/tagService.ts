@@ -22,9 +22,9 @@ export const fetchTags = async (): Promise<Tag[]> => {
 };
 
 export const createTag = async (name: string): Promise<Tag> => {
-  // Properly type the RPC call to create_tag
+  // Properly type the RPC call to create_tag with both type arguments
   const { data, error } = await supabase
-    .rpc<null>('create_tag', { tag_name: name });
+    .rpc<Tag, { tag_name: string }>('create_tag', { tag_name: name });
     
   if (error) {
     console.error('Error creating tag:', error);
