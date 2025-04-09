@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Tag {
@@ -23,17 +22,25 @@ export const fetchTags = async (): Promise<Tag[]> => {
 
 export const createTag = async (name: string): Promise<Tag> => {
   const { data, error } = await supabase
-    .from('tags')
-    .insert([{ name }])
-    .select()
-    .single();
+    .rpc('create_tag', { tag_name: name });
     
   if (error) {
     console.error('Error creating tag:', error);
     throw new Error('Не удалось создать тег');
   }
   
-  return data;
+  const { data: tagData, error: tagError } = await supabase
+    .from('tags')
+    .select('*')
+    .eq('name', name)
+    .single();
+    
+  if (tagError) {
+    console.error('Error fetching created tag:', tagError);
+    throw new Error('Тег был создан, но не удалось его получить');
+  }
+  
+  return tagData;
 };
 
 export const updateTag = async (id: number, name: string): Promise<Tag> => {
@@ -53,7 +60,6 @@ export const updateTag = async (id: number, name: string): Promise<Tag> => {
 };
 
 export const deleteTag = async (id: number): Promise<void> => {
-  // Сначала удаляем связи тега с проектами
   const { error: relationError } = await supabase
     .from('project_tags')
     .delete()
@@ -64,7 +70,6 @@ export const deleteTag = async (id: number): Promise<void> => {
     throw new Error('Не удалось удалить связи тега с проектами');
   }
   
-  // Затем удаляем сам тег
   const { error } = await supabase
     .from('tags')
     .delete()
@@ -95,7 +100,6 @@ export const getProjectTags = async (projectId: number): Promise<Tag[]> => {
 
 export const updateProjectTags = async (projectId: number, tagIds: number[]): Promise<void> => {
   try {
-    // Сначала удаляем все существующие связи тегов с проектом
     const { error: deleteError } = await supabase
       .from('project_tags')
       .delete()
@@ -103,7 +107,6 @@ export const updateProjectTags = async (projectId: number, tagIds: number[]): Pr
       
     if (deleteError) throw deleteError;
     
-    // Если есть новые теги для связи, добавляем их
     if (tagIds.length > 0) {
       const tagRelations = tagIds.map(tagId => ({
         project_id: projectId,

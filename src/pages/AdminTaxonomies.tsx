@@ -28,7 +28,8 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
-  DialogClose
+  DialogClose,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { 
   fetchCategories, 
@@ -68,6 +69,7 @@ const AdminTaxonomies = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<'category' | 'tag'>('category');
   const [dialogInputValue, setDialogInputValue] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     const authStatus = localStorage.getItem('isAuthenticated');
@@ -126,6 +128,8 @@ const AdminTaxonomies = () => {
     if (!dialogInputValue.trim()) return;
     
     try {
+      setIsCreating(true);
+      
       if (dialogMode === 'category') {
         await createCategory(dialogInputValue);
         fetchCategoriesData();
@@ -153,32 +157,12 @@ const AdminTaxonomies = () => {
         description: `Не удалось создать ${dialogMode === 'category' ? 'категорию' : 'тег'}`,
         variant: "destructive",
       });
+    } finally {
+      setIsCreating(false);
     }
   };
   
   // Category actions
-  const handleCreateCategory = async () => {
-    if (!newCategoryName.trim()) return;
-    
-    try {
-      await createCategory(newCategoryName);
-      setNewCategoryName('');
-      fetchCategoriesData();
-      toast({
-        title: "Успех",
-        description: "Категория успешно создана",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Error creating category:', error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось создать категорию",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleStartEditCategory = (category: Category) => {
     setEditingCategoryId(category.id);
     setEditingCategoryName(category.name);
@@ -236,28 +220,6 @@ const AdminTaxonomies = () => {
   };
   
   // Tag actions
-  const handleCreateTag = async () => {
-    if (!newTagName.trim()) return;
-    
-    try {
-      await createTag(newTagName);
-      setNewTagName('');
-      fetchTagsData();
-      toast({
-        title: "Успех",
-        description: "Тег успешно создан",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Error creating tag:', error);
-      toast({
-        title: "Ошибка",
-        description: "Не удалось создать тег",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleStartEditTag = (tag: Tag) => {
     setEditingTagId(tag.id);
     setEditingTagName(tag.name);
@@ -330,6 +292,11 @@ const AdminTaxonomies = () => {
               <DialogTitle>
                 {dialogMode === 'category' ? 'Создать новую категорию' : 'Создать новый тег'}
               </DialogTitle>
+              <DialogDescription>
+                {dialogMode === 'category' 
+                  ? 'Введите название для новой категории.' 
+                  : 'Введите название для нового тега.'}
+              </DialogDescription>
             </DialogHeader>
             <div className="flex items-center space-y-4 py-4">
               <Input
@@ -348,9 +315,10 @@ const AdminTaxonomies = () => {
               <Button 
                 type="button" 
                 onClick={handleDialogSubmit}
+                disabled={isCreating || !dialogInputValue.trim()}
                 className="bg-fpm-blue hover:bg-fpm-blue/90"
               >
-                Создать
+                {isCreating ? 'Создание...' : 'Создать'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -359,8 +327,8 @@ const AdminTaxonomies = () => {
         {/* Tabs */}
         <Tabs defaultValue="categories" className="w-full">
           <TabsList className="mb-4 w-full">
-            <TabsTrigger value="categories" className="flex-1">Категории</TabsTrigger>
-            <TabsTrigger value="tags" className="flex-1">Теги</TabsTrigger>
+            <TabsTrigger value="categories">Категории</TabsTrigger>
+            <TabsTrigger value="tags">Теги</TabsTrigger>
           </TabsList>
           
           {/* Categories Tab */}
@@ -371,6 +339,7 @@ const AdminTaxonomies = () => {
                   <Button 
                     onClick={() => openCreateDialog('category')}
                     className="bg-fpm-blue hover:bg-fpm-blue/90"
+                    type="button"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Добавить категорию
@@ -416,6 +385,7 @@ const AdminTaxonomies = () => {
                                   onClick={() => handleSaveEditCategory(category.id)} 
                                   variant="outline" 
                                   size="sm"
+                                  type="button"
                                 >
                                   <Save className="h-4 w-4 mr-1" />
                                   Сохранить
@@ -424,6 +394,7 @@ const AdminTaxonomies = () => {
                                   onClick={handleCancelEditCategory} 
                                   variant="outline" 
                                   size="sm"
+                                  type="button"
                                 >
                                   <X className="h-4 w-4 mr-1" />
                                   Отмена
@@ -435,6 +406,7 @@ const AdminTaxonomies = () => {
                                   onClick={() => handleStartEditCategory(category)} 
                                   variant="outline" 
                                   size="sm"
+                                  type="button"
                                 >
                                   <Edit className="h-4 w-4 mr-1" />
                                   Изменить
@@ -443,6 +415,7 @@ const AdminTaxonomies = () => {
                                   onClick={() => handleDeleteCategory(category.id)} 
                                   variant="destructive" 
                                   size="sm"
+                                  type="button"
                                 >
                                   <Trash2 className="h-4 w-4 mr-1" />
                                   Удалить
@@ -467,6 +440,7 @@ const AdminTaxonomies = () => {
                   <Button 
                     onClick={() => openCreateDialog('tag')}
                     className="bg-fpm-blue hover:bg-fpm-blue/90"
+                    type="button"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Добавить тег
@@ -512,6 +486,7 @@ const AdminTaxonomies = () => {
                                   onClick={() => handleSaveEditTag(tag.id)} 
                                   variant="outline" 
                                   size="sm"
+                                  type="button"
                                 >
                                   <Save className="h-4 w-4 mr-1" />
                                   Сохранить
@@ -520,6 +495,7 @@ const AdminTaxonomies = () => {
                                   onClick={handleCancelEditTag} 
                                   variant="outline" 
                                   size="sm"
+                                  type="button"
                                 >
                                   <X className="h-4 w-4 mr-1" />
                                   Отмена
@@ -531,6 +507,7 @@ const AdminTaxonomies = () => {
                                   onClick={() => handleStartEditTag(tag)} 
                                   variant="outline" 
                                   size="sm"
+                                  type="button"
                                 >
                                   <Edit className="h-4 w-4 mr-1" />
                                   Изменить
@@ -539,6 +516,7 @@ const AdminTaxonomies = () => {
                                   onClick={() => handleDeleteTag(tag.id)} 
                                   variant="destructive" 
                                   size="sm"
+                                  type="button"
                                 >
                                   <Trash2 className="h-4 w-4 mr-1" />
                                   Удалить

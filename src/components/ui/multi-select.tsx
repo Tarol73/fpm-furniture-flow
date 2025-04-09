@@ -24,6 +24,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
@@ -46,10 +47,10 @@ export function MultiSelect({
   options,
   selected,
   onChange,
-  placeholder = "Select items...",
+  placeholder = "Выберите элементы...",
   className,
   createNew,
-  createNewPlaceholder = "Create new item...",
+  createNewPlaceholder = "Создать новый элемент...",
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false);
   const [newItemDialogOpen, setNewItemDialogOpen] = React.useState(false);
@@ -140,12 +141,12 @@ export function MultiSelect({
         <PopoverContent className="w-full p-0" align="start">
           <Command>
             <CommandInput 
-              placeholder="Search items..." 
+              placeholder="Поиск элементов..." 
               value={inputValue}
               onValueChange={setInputValue}
             />
             <CommandList>
-              <CommandEmpty>No items found.</CommandEmpty>
+              <CommandEmpty>Элементы не найдены.</CommandEmpty>
               <CommandGroup>
                 {filteredOptions.map((option) => {
                   const isSelected = selected.some((item) => item.value === option.value);
@@ -195,26 +196,32 @@ export function MultiSelect({
       <Dialog open={newItemDialogOpen} onOpenChange={setNewItemDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create new item</DialogTitle>
+            <DialogTitle>Создать новый элемент</DialogTitle>
+            <DialogDescription>
+              Введите название для нового элемента.
+            </DialogDescription>
           </DialogHeader>
           <Input
             value={newItemValue}
             onChange={(e) => setNewItemValue(e.target.value)}
-            placeholder="Enter name"
+            placeholder="Введите название"
             className="mt-4"
           />
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setNewItemDialogOpen(false)}
+              type="button"
             >
-              Cancel
+              Отмена
             </Button>
             <Button
               onClick={handleCreateNewItem}
               disabled={!newItemValue.trim() || creating}
+              className="bg-fpm-blue hover:bg-fpm-blue/90"
+              type="button"
             >
-              {creating ? "Creating..." : "Create"}
+              {creating ? "Создание..." : "Создать"}
             </Button>
           </DialogFooter>
         </DialogContent>
