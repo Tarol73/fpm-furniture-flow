@@ -103,22 +103,12 @@ export const getProjectTags = async (projectId: number): Promise<Tag[]> => {
 
 export const updateProjectTags = async (projectId: number, tagIds: number[]): Promise<void> => {
   try {
-    // Enhanced logging for debugging
-    console.log('Updating project tags:', { projectId, tagIds });
+    // More extensive logging for troubleshooting
+    console.log('Starting updateProjectTags with:', { projectId, tagIds });
     
-    // First, check if the project exists
-    const { data: projectExists, error: projectError } = await supabase
-      .from('projects')
-      .select('id')
-      .eq('id', projectId)
-      .single();
-      
-    if (projectError) {
-      console.error('Error verifying project existence:', projectError);
-      throw new Error('Проект не найден');
-    }
+    // Simplified approach - directly handle the tag relationships
     
-    // Delete existing relationships first
+    // Step 1: Delete all existing tag relations for this project
     const { error: deleteError } = await supabase
       .from('project_tags')
       .delete()
@@ -129,33 +119,36 @@ export const updateProjectTags = async (projectId: number, tagIds: number[]): Pr
       throw deleteError;
     }
     
-    // Only insert new relationships if there are tags to add
+    console.log('Successfully deleted existing tag relations');
+    
+    // Step 2: Create new relations only if there are tags to add
     if (tagIds.length > 0) {
-      // Prepare the tag relations
+      // Create tag relation objects
       const tagRelations = tagIds.map(tagId => ({
         project_id: projectId,
         tag_id: tagId
       }));
       
-      console.log('Inserting new tag relations:', tagRelations);
+      console.log('Preparing to insert new tag relations:', tagRelations);
       
-      // Insert with upsert option to avoid duplicates
+      // Insert new relations as a batch
       const { error: insertError } = await supabase
         .from('project_tags')
-        .upsert(tagRelations, { 
-          onConflict: 'project_id,tag_id',
-          ignoreDuplicates: true
-        });
+        .insert(tagRelations);
         
       if (insertError) {
         console.error('Error inserting project tags:', insertError);
         throw insertError;
       }
+      
+      console.log('Successfully inserted new tag relations');
+    } else {
+      console.log('No tags to insert, skipping insert operation');
     }
     
     console.log('Project tags updated successfully');
   } catch (error) {
-    console.error('Error updating project tags:', error);
+    console.error('Error in updateProjectTags:', error);
     throw new Error('Не удалось обновить теги проекта');
   }
 };
