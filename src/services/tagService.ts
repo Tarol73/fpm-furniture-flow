@@ -47,40 +47,48 @@ export const createTag = async (name: string): Promise<Tag> => {
 };
 
 export const updateTag = async (id: number, name: string): Promise<Tag> => {
-  // First ensure tag exists before updating
-  const { data: existingTag, error: checkError } = await supabase
-    .from('tags')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
-
-  if (checkError || !existingTag) {
-    console.error('Error checking tag existence:', checkError);
-    throw new Error('Тег не найден');
-  }
-
-  // Now update the tag with more detailed error handling
   try {
+    console.log('Updating tag with ID:', id, 'New name:', name);
+    
+    // First ensure tag exists before updating
+    const { data: existingTag, error: checkError } = await supabase
+      .from('tags')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (checkError) {
+      console.error('Error checking tag existence:', checkError);
+      throw new Error('Не удалось проверить существование тега');
+    }
+    
+    if (!existingTag) {
+      console.error('Tag not found for update:', id);
+      throw new Error('Тег не найден');
+    }
+    
+    // Update the tag without using .single() initially to avoid the PGRST116 error
     const { data, error } = await supabase
       .from('tags')
       .update({ name })
       .eq('id', id)
-      .select()
-      .single();
+      .select();
       
     if (error) {
       console.error('Error updating tag:', error);
       throw new Error('Не удалось обновить тег');
     }
     
-    if (!data) {
+    if (!data || data.length === 0) {
+      console.error('Tag update returned no data');
       throw new Error('Тег не был обновлен');
     }
     
-    return data;
+    console.log('Successfully updated tag:', data[0]);
+    return data[0];
   } catch (error) {
     console.error('Exception in updateTag:', error);
-    throw new Error('Не удалось обновить тег');
+    throw error instanceof Error ? error : new Error('Не удалось обновить тег');
   }
 };
 
@@ -92,8 +100,8 @@ export const deleteTag = async (id: number): Promise<void> => {
     const { data: tagExists, error: checkError } = await supabase
       .from('tags')
       .select('id')
-      .eq('id', id)
-      .maybeSingle();
+      .maybeSingle()
+      .eq('id', id);
       
     if (checkError) {
       console.error('Error checking tag existence:', checkError);
@@ -132,7 +140,7 @@ export const deleteTag = async (id: number): Promise<void> => {
     console.log('Successfully deleted tag with ID:', id);
   } catch (error) {
     console.error('Exception in deleteTag:', error);
-    throw error;
+    throw error instanceof Error ? error : new Error('Не удалось удалить тег');
   }
 };
 
