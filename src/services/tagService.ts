@@ -50,20 +50,42 @@ export const updateTag = async (id: number, name: string): Promise<Tag> => {
   console.log('Updating tag with ID:', id, 'New name:', name);
   
   try {
+    // First check if the tag exists
+    const { data: existingTag, error: checkError } = await supabase
+      .from('tags')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+      
+    if (checkError) {
+      console.error('Error checking tag existence:', checkError);
+      throw new Error('Не удалось проверить существование тега');
+    }
+    
+    if (!existingTag) {
+      console.error('Tag not found with ID:', id);
+      throw new Error('Тег не найден');
+    }
+    
+    // Now update the tag
     const { data, error } = await supabase
       .from('tags')
       .update({ name })
       .eq('id', id)
-      .select('*')
-      .single();
+      .select('*');
     
     if (error) {
       console.error('Error updating tag:', error);
       throw new Error('Не удалось обновить тег');
     }
     
-    console.log('Updated tag data:', data);
-    return data;
+    if (!data || data.length === 0) {
+      console.error('No data returned after tag update');
+      throw new Error('Тег не был обновлен');
+    }
+    
+    console.log('Updated tag data:', data[0]);
+    return data[0];
   } catch (error) {
     console.error('Exception in updateTag:', error);
     throw new Error('Не удалось обновить тег');
@@ -74,6 +96,23 @@ export const deleteTag = async (id: number): Promise<void> => {
   console.log('Deleting tag with ID:', id);
   
   try {
+    // First check if the tag exists
+    const { data: existingTag, error: checkError } = await supabase
+      .from('tags')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+      
+    if (checkError) {
+      console.error('Error checking tag existence:', checkError);
+      throw new Error('Не удалось проверить существование тега');
+    }
+    
+    if (!existingTag) {
+      console.error('Tag not found with ID:', id);
+      throw new Error('Тег не найден');
+    }
+    
     // Delete project relations first
     const { error: relationError } = await supabase
       .from('project_tags')
