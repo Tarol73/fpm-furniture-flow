@@ -100,8 +100,8 @@ export const deleteTag = async (id: number): Promise<void> => {
     const { data: tagExists, error: checkError } = await supabase
       .from('tags')
       .select('id')
-      .maybeSingle()
-      .eq('id', id);
+      .eq('id', id)
+      .maybeSingle();
       
     if (checkError) {
       console.error('Error checking tag existence:', checkError);
