@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Tag {
@@ -47,103 +46,43 @@ export const createTag = async (name: string): Promise<Tag> => {
 };
 
 export const updateTag = async (id: number, name: string): Promise<Tag> => {
-  try {
-    console.log('Updating tag with ID:', id, 'New name:', name);
-    
-    // First ensure tag exists before updating
-    const { data: existingTag, error: checkError } = await supabase
-      .from('tags')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (checkError) {
-      console.error('Error checking tag existence:', checkError);
-      throw new Error('Не удалось проверить существование тега');
-    }
-    
-    if (!existingTag) {
-      console.error('Tag not found for update:', id);
-      throw new Error('Тег не найден');
-    }
-    
-    // Update the tag using .eq() first, then select() to get the updated data
-    const { data, error } = await supabase
-      .from('tags')
-      .update({ name })
-      .eq('id', id)
-      .select();
-      
-    if (error) {
-      console.error('Error updating tag:', error);
-      throw new Error('Не удалось обновить тег');
-    }
-    
-    if (!data || data.length === 0) {
-      console.error('Tag update returned no data');
-      throw new Error('Тег не был обновлен');
-    }
-    
-    console.log('Successfully updated tag:', data[0]);
-    return data[0];
-  } catch (error) {
-    console.error('Exception in updateTag:', error);
-    throw error instanceof Error ? error : new Error('Не удалось обновить тег');
+  // Simplified update approach similar to categoryService
+  const { data, error } = await supabase
+    .from('tags')
+    .update({ name })
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error updating tag:', error);
+    throw new Error('Не удалось обновить тег');
   }
+  
+  return data;
 };
 
 export const deleteTag = async (id: number): Promise<void> => {
-  try {
-    console.log('Attempting to delete tag with ID:', id);
-    
-    // First check if the tag exists
-    const { data: tagExists, error: checkError } = await supabase
-      .from('tags')
-      .select('id')
-      .eq('id', id)
-      .maybeSingle();
-      
-    if (checkError) {
-      console.error('Error checking tag existence:', checkError);
-      throw new Error('Не удалось проверить существование тега');
-    }
-    
-    if (!tagExists) {
-      console.error('Tag not found for deletion:', id);
-      throw new Error('Тег не найден');
-    }
-    
-    // First delete relations to avoid foreign key constraints
-    // Use a more direct approach to delete all relations
-    console.log('Deleting tag relations for tag ID:', id);
-    const { error: relationError } = await supabase
-      .from('project_tags')
-      .delete()
-      .eq('tag_id', id);
-      
-    if (relationError) {
-      console.error('Error deleting tag relations:', relationError);
-      throw new Error('Не удалось удалить связи тега с проектами');
-    }
-    
-    console.log('Successfully deleted tag relations for tag ID:', id);
-    
-    // Improved tag deletion with better error handling
-    console.log('Now deleting the tag itself with ID:', id);
-    const { error } = await supabase
-      .from('tags')
-      .delete()
-      .eq('id', id);
-      
-    if (error) {
-      console.error('Error deleting tag:', error);
-      throw new Error('Не удалось удалить тег');
-    }
-    
-    console.log('Successfully deleted tag with ID:', id);
-  } catch (error) {
-    console.error('Exception in deleteTag:', error);
-    throw error instanceof Error ? error : new Error('Не удалось удалить тег');
+  // Delete project relations first
+  const { error: relationError } = await supabase
+    .from('project_tags')
+    .delete()
+    .eq('tag_id', id);
+  
+  if (relationError) {
+    console.error('Error deleting tag relations:', relationError);
+    throw new Error('Не удалось удалить связи тега с проектами');
+  }
+  
+  // Delete the tag
+  const { error } = await supabase
+    .from('tags')
+    .delete()
+    .eq('id', id);
+  
+  if (error) {
+    console.error('Error deleting tag:', error);
+    throw new Error('Не удалось удалить тег');
   }
 };
 
