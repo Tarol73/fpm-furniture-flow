@@ -33,6 +33,43 @@ export const createCategory = async (name: string): Promise<Category> => {
   return data;
 };
 
+export const updateCategory = async (id: number, name: string): Promise<Category> => {
+  const { data, error } = await supabase
+    .from('categories')
+    .update({ name })
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) {
+    throw new Error(`Failed to update category: ${error.message}`);
+  }
+  
+  return data;
+};
+
+export const deleteCategory = async (id: number): Promise<void> => {
+  // Сначала удаляем связи категории с проектами
+  const { error: relationError } = await supabase
+    .from('project_categories')
+    .delete()
+    .eq('category_id', id);
+  
+  if (relationError) {
+    throw new Error(`Failed to delete category relations: ${relationError.message}`);
+  }
+  
+  // Затем удаляем саму категорию
+  const { error } = await supabase
+    .from('categories')
+    .delete()
+    .eq('id', id);
+  
+  if (error) {
+    throw new Error(`Failed to delete category: ${error.message}`);
+  }
+};
+
 export const getProjectCategories = async (projectId: number): Promise<Category[]> => {
   // We need to use .from('project_categories') with a string literal to avoid type issues
   // Then manually type the return data
