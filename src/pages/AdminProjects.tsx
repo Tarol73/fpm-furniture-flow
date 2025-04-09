@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -113,7 +112,7 @@ const AdminProjects = () => {
   };
 
   const handleDeleteProject = async (projectId: number) => {
-    if (!window.confirm("Вы уверены, что хотите удалить этот проект? Это действие невозможно отменить.")) {
+    if (!window.confirm("В�� уверены, что хотите удалить этот проект? Это действие невозможно отменить.")) {
       return;
     }
     
@@ -268,7 +267,52 @@ const AdminProjects = () => {
         return;
       }
       
-      // Обновляем порядок отображения в базе данных
+      // Получаем текущий проект
+      const projectToUpdate = projects.find(p => p.id === projectId);
+      if (!projectToUpdate) return;
+      
+      const currentOrder = projectToUpdate.display_order || 0;
+      
+      // Если порядок не изменился, ничего не делаем
+      if (newOrder === currentOrder) {
+        setEditingOrderId(null);
+        setEditingOrderValue('');
+        return;
+      }
+      
+      setSavingOrder(true);
+      
+      if (newOrder > currentOrder) {
+        // Перемещаем проект на более низкую позицию (вниз)
+        // Сдвигаем вверх все проекты, которые имеют порядок больше текущего и меньше либо равно новому
+        for (const project of projects) {
+          if (project.id !== projectId && 
+              project.display_order && 
+              project.display_order > currentOrder && 
+              project.display_order <= newOrder) {
+            await supabase
+              .from('projects')
+              .update({ display_order: project.display_order - 1 })
+              .eq('id', project.id);
+          }
+        }
+      } else {
+        // Перемещаем проект на более высокую позицию (вверх)
+        // Сдвигаем вниз все проекты, которые имеют порядок меньше текущего и больше либо равно новому
+        for (const project of projects) {
+          if (project.id !== projectId && 
+              project.display_order && 
+              project.display_order < currentOrder && 
+              project.display_order >= newOrder) {
+            await supabase
+              .from('projects')
+              .update({ display_order: project.display_order + 1 })
+              .eq('id', project.id);
+          }
+        }
+      }
+      
+      // Обновляем порядок отображения текущего проекта
       const { error } = await supabase
         .from('projects')
         .update({ display_order: newOrder })
@@ -276,34 +320,19 @@ const AdminProjects = () => {
       
       if (error) throw error;
       
-      // Обновляем локальное состояние
-      const updatedProjects = projects.map(project => {
-        if (project.id === projectId) {
-          return { ...project, display_order: newOrder };
-        }
-        return project;
-      });
-      
-      setProjects(updatedProjects);
-      
-      // Сортировка проектов в соответствии с порядком отображения
-      const sortedProjects = [...updatedProjects].sort((a, b) => {
-        const aOrder = a.display_order || 0;
-        const bOrder = b.display_order || 0;
-        return aOrder - bOrder;
-      });
-      
-      setDisplayedProjects(sortedProjects);
+      // Обновляем локальное состояние и перезагружаем проекты
+      await fetchProjects();
       
       toast({
         title: "Успех",
-        description: "Порядок отображения проекта обновлен",
+        description: "Порядок отображения проектов обновлен",
         variant: "default",
       });
       
       // Сбрасываем состояние редактирования
       setEditingOrderId(null);
       setEditingOrderValue('');
+      setSavingOrder(false);
     } catch (error) {
       console.error('Error updating project order:', error);
       toast({
@@ -311,6 +340,7 @@ const AdminProjects = () => {
         description: "Не удалось обновить порядок отображения проекта",
         variant: "destructive",
       });
+      setSavingOrder(false);
     }
   };
 
