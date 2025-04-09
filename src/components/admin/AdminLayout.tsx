@@ -11,7 +11,7 @@ import {
   SidebarProvider,
   SidebarTrigger
 } from '@/components/ui/sidebar';
-import { LayoutDashboard, Settings, FolderKanban, LogOut, HomeIcon, Menu } from 'lucide-react';
+import { LayoutDashboard, Settings, FolderKanban, LogOut, HomeIcon, Menu, Tag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -85,6 +85,15 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               <Button 
                 variant="ghost" 
                 className="w-full justify-start" 
+                onClick={() => navigateTo('/admin/taxonomies')}
+              >
+                <Tag className="mr-2 h-5 w-5" />
+                <span>Категории и теги</span>
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start" 
                 onClick={() => window.open('/', '_blank')}
               >
                 <HomeIcon className="mr-2 h-5 w-5" />
@@ -144,6 +153,19 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                   <div className="flex items-center">
                     <FolderKanban className="mr-2 h-5 w-5" />
                     <span>Управление проектами</span>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild 
+                  tooltip="Категории и теги"
+                  onClick={() => navigate('/admin/taxonomies')}
+                >
+                  <div className="flex items-center">
+                    <Tag className="mr-2 h-5 w-5" />
+                    <span>Категории и теги</span>
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>

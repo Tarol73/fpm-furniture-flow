@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,6 +41,7 @@ import * as z from 'zod';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from "@/components/ui/checkbox";
 import { fetchCategories, createCategory, getProjectCategories, updateProjectCategories, Category } from '@/services/categoryService';
+import { fetchTags, createTag, getProjectTags, updateProjectTags, Tag } from '@/services/tagService';
 import { MultiSelect, OptionType } from '@/components/ui/multi-select';
 
 const projectSchema = z.object({
@@ -74,9 +76,12 @@ const AdminProjectEdit = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<OptionType[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<OptionType[]>([]);
   const [initialFormValues, setInitialFormValues] = useState<ProjectFormValues | null>(null);
   const [formChanged, setFormChanged] = useState(false);
   const [categoriesChanged, setCategoriesChanged] = useState(false);
+  const [tagsChanged, setTagsChanged] = useState(false);
   const isNew = id === 'new';
 
   const form = useForm<ProjectFormValues>({
@@ -104,9 +109,9 @@ const AdminProjectEdit = () => {
       const hasChanged = Object.keys(formValues).some(
         (key) => formValues[key as keyof ProjectFormValues] !== initialFormValues[key as keyof ProjectFormValues]
       );
-      setFormChanged(hasChanged || categoriesChanged);
+      setFormChanged(hasChanged || categoriesChanged || tagsChanged);
     }
-  }, [formValues, initialFormValues, categoriesChanged]);
+  }, [formValues, initialFormValues, categoriesChanged, tagsChanged]);
 
   useEffect(() => {
     const authStatus = localStorage.getItem('isAuthenticated');
@@ -118,6 +123,7 @@ const AdminProjectEdit = () => {
     setIsAuthenticated(true);
     
     fetchCategoriesData();
+    fetchTagsData();
     
     if (!isNew) {
       fetchProject();
@@ -135,6 +141,20 @@ const AdminProjectEdit = () => {
       toast({
         title: "Ошибка",
         description: "Не удалось загрузить категории",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchTagsData = async () => {
+    try {
+      const tagsData = await fetchTags();
+      setTags(tagsData);
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить теги",
         variant: "destructive",
       });
     }
@@ -178,6 +198,14 @@ const AdminProjectEdit = () => {
         label: cat.name
       }));
       setSelectedCategories(categoryOptions);
+      
+      // Fetch project tags
+      const projectTags = await getProjectTags(Number(id));
+      const tagOptions = projectTags.map(tag => ({
+        value: tag.id,
+        label: tag.name
+      }));
+      setSelectedTags(tagOptions);
       
       // Set form values from project data
       Object.keys(projectData).forEach((key) => {
@@ -224,6 +252,14 @@ const AdminProjectEdit = () => {
     }
   };
 
+  const handleTagChange = (selected: OptionType[]) => {
+    setSelectedTags(selected);
+    // Check if tags have changed from initial state
+    if (project) {
+      setTagsChanged(true);
+    }
+  };
+
   const handleCreateCategory = async (name: string): Promise<OptionType> => {
     const newCategory = await createCategory(name);
     // Update local categories state
@@ -231,6 +267,16 @@ const AdminProjectEdit = () => {
     return {
       value: newCategory.id,
       label: newCategory.name
+    };
+  };
+
+  const handleCreateTag = async (name: string): Promise<OptionType> => {
+    const newTag = await createTag(name);
+    // Update local tags state
+    setTags([...tags, newTag]);
+    return {
+      value: newTag.id,
+      label: newTag.name
     };
   };
 
@@ -289,6 +335,12 @@ const AdminProjectEdit = () => {
           await updateProjectCategories(newProject.id, categoryIds);
         }
         
+        // Save tags relationship
+        if (selectedTags.length > 0) {
+          const tagIds = selectedTags.map(tag => Number(tag.value));
+          await updateProjectTags(newProject.id, tagIds);
+        }
+        
         toast({
           title: "Успех",
           description: "Проект успешно создан",
@@ -308,6 +360,10 @@ const AdminProjectEdit = () => {
         const categoryIds = selectedCategories.map(cat => Number(cat.value));
         await updateProjectCategories(Number(id), categoryIds);
         
+        // Update tags relationship
+        const tagIds = selectedTags.map(tag => Number(tag.value));
+        await updateProjectTags(Number(id), tagIds);
+        
         toast({
           title: "Успех",
           description: "Проект успешно обновлен",
@@ -322,6 +378,7 @@ const AdminProjectEdit = () => {
         // Reset change tracking
         setInitialFormValues(values);
         setCategoriesChanged(false);
+        setTagsChanged(false);
         setFormChanged(false);
       }
     } catch (error) {
@@ -600,6 +657,12 @@ const AdminProjectEdit = () => {
     label: cat.name
   }));
 
+  // Transform tags into options for MultiSelect
+  const tagOptions = tags.map(tag => ({
+    value: tag.id,
+    label: tag.name
+  }));
+
   return (
     <AdminLayout>
       <div>
@@ -671,6 +734,18 @@ const AdminProjectEdit = () => {
                             placeholder="Выберите категории"
                             createNew={handleCreateCategory}
                             createNewPlaceholder="Создать категорию '{value}'"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <FormLabel htmlFor="tags">Теги</FormLabel>
+                          <MultiSelect
+                            options={tagOptions}
+                            selected={selectedTags}
+                            onChange={handleTagChange}
+                            placeholder="Выберите теги"
+                            createNew={handleCreateTag}
+                            createNewPlaceholder="Создать тег '{value}'"
                           />
                         </div>
                         
