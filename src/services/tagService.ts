@@ -47,40 +47,92 @@ export const createTag = async (name: string): Promise<Tag> => {
 };
 
 export const updateTag = async (id: number, name: string): Promise<Tag> => {
-  const { data, error } = await supabase
+  // First ensure tag exists before updating
+  const { data: existingTag, error: checkError } = await supabase
     .from('tags')
-    .update({ name })
+    .select('*')
     .eq('id', id)
-    .select()
-    .single();
+    .maybeSingle();
+
+  if (checkError || !existingTag) {
+    console.error('Error checking tag existence:', checkError);
+    throw new Error('Тег не найден');
+  }
+
+  // Now update the tag with more detailed error handling
+  try {
+    const { data, error } = await supabase
+      .from('tags')
+      .update({ name })
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) {
+      console.error('Error updating tag:', error);
+      throw new Error('Не удалось обновить тег');
+    }
     
-  if (error) {
-    console.error('Error updating tag:', error);
+    if (!data) {
+      throw new Error('Тег не был обновлен');
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Exception in updateTag:', error);
     throw new Error('Не удалось обновить тег');
   }
-  
-  return data;
 };
 
 export const deleteTag = async (id: number): Promise<void> => {
-  const { error: relationError } = await supabase
-    .from('project_tags')
-    .delete()
-    .eq('tag_id', id);
+  try {
+    console.log('Attempting to delete tag with ID:', id);
     
-  if (relationError) {
-    console.error('Error deleting tag relations:', relationError);
-    throw new Error('Не удалось удалить связи тега с проектами');
-  }
-  
-  const { error } = await supabase
-    .from('tags')
-    .delete()
-    .eq('id', id);
+    // First check if the tag exists
+    const { data: tagExists, error: checkError } = await supabase
+      .from('tags')
+      .select('id')
+      .eq('id', id)
+      .maybeSingle();
+      
+    if (checkError) {
+      console.error('Error checking tag existence:', checkError);
+      throw new Error('Не удалось проверить существование тега');
+    }
     
-  if (error) {
-    console.error('Error deleting tag:', error);
-    throw new Error('Не удалось удалить тег');
+    if (!tagExists) {
+      console.error('Tag not found for deletion:', id);
+      throw new Error('Тег не найден');
+    }
+    
+    // First delete relations to avoid foreign key constraints
+    const { error: relationError } = await supabase
+      .from('project_tags')
+      .delete()
+      .eq('tag_id', id);
+      
+    if (relationError) {
+      console.error('Error deleting tag relations:', relationError);
+      throw new Error('Не удалось удалить связи тега с проектами');
+    }
+    
+    console.log('Successfully deleted tag relations for tag ID:', id);
+    
+    // Then delete the tag itself
+    const { error } = await supabase
+      .from('tags')
+      .delete()
+      .eq('id', id);
+      
+    if (error) {
+      console.error('Error deleting tag:', error);
+      throw new Error('Не удалось удалить тег');
+    }
+    
+    console.log('Successfully deleted tag with ID:', id);
+  } catch (error) {
+    console.error('Exception in deleteTag:', error);
+    throw error;
   }
 };
 
