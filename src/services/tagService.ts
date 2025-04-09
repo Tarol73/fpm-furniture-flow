@@ -103,12 +103,18 @@ export const getProjectTags = async (projectId: number): Promise<Tag[]> => {
 
 export const updateProjectTags = async (projectId: number, tagIds: number[]): Promise<void> => {
   try {
+    // Add more detailed logging to help debugging
+    console.log('Updating project tags:', { projectId, tagIds });
+    
     const { error: deleteError } = await supabase
       .from('project_tags')
       .delete()
       .eq('project_id', projectId);
       
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      console.error('Error deleting existing project tags:', deleteError);
+      throw deleteError;
+    }
     
     if (tagIds.length > 0) {
       const tagRelations = tagIds.map(tagId => ({
@@ -116,12 +122,19 @@ export const updateProjectTags = async (projectId: number, tagIds: number[]): Pr
         tag_id: tagId
       }));
       
+      console.log('Inserting new tag relations:', tagRelations);
+      
       const { error: insertError } = await supabase
         .from('project_tags')
         .insert(tagRelations);
         
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Error inserting project tags:', insertError);
+        throw insertError;
+      }
     }
+    
+    console.log('Project tags updated successfully');
   } catch (error) {
     console.error('Error updating project tags:', error);
     throw new Error('Не удалось обновить теги проекта');
