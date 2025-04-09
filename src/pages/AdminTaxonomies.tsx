@@ -371,9 +371,9 @@ const AdminTaxonomies = () => {
                 placeholder="Новый тег"
                 className="max-w-md"
               />
-              <Button onClick={handleCreateTag}>
+              <Button onClick={handleCreateTag} type="button">
                 <Plus className="h-4 w-4 mr-2" />
-                Добавить
+                Создать
               </Button>
             </div>
             
@@ -417,14 +417,16 @@ const AdminTaxonomies = () => {
                               variant="outline" 
                               size="sm"
                             >
-                              <Save className="h-4 w-4" />
+                              <Save className="h-4 w-4 mr-1" />
+                              Сохранить
                             </Button>
                             <Button 
                               onClick={handleCancelEditTag} 
                               variant="outline" 
                               size="sm"
                             >
-                              <X className="h-4 w-4" />
+                              <X className="h-4 w-4 mr-1" />
+                              Отмена
                             </Button>
                           </div>
                         ) : (
@@ -434,14 +436,16 @@ const AdminTaxonomies = () => {
                               variant="outline" 
                               size="sm"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-4 w-4 mr-1" />
+                              Изменить
                             </Button>
                             <Button 
                               onClick={() => handleDeleteTag(tag.id)} 
                               variant="destructive" 
                               size="sm"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Удалить
                             </Button>
                           </div>
                         )}
