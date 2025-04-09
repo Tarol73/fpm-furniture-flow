@@ -15,7 +15,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Edit2, Plus, Trash2, Search, ArrowUp, ArrowDown, Save } from 'lucide-react';
+import { Edit2, Plus, Trash2, Search, ArrowUp, ArrowDown, Save, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 
