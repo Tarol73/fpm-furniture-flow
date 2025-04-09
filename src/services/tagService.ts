@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Tag {
@@ -21,8 +22,9 @@ export const fetchTags = async (): Promise<Tag[]> => {
 };
 
 export const createTag = async (name: string): Promise<Tag> => {
+  // Use the generic version of rpc to specify the parameter types
   const { data, error } = await supabase
-    .rpc('create_tag', { tag_name: name });
+    .rpc('create_tag', { tag_name: name } as { tag_name: string });
     
   if (error) {
     console.error('Error creating tag:', error);
