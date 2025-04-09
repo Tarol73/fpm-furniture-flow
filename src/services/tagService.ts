@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Tag {
@@ -46,42 +47,60 @@ export const createTag = async (name: string): Promise<Tag> => {
 };
 
 export const updateTag = async (id: number, name: string): Promise<Tag> => {
-  // Simplified update approach similar to categoryService
-  const { data, error } = await supabase
-    .from('tags')
-    .update({ name })
-    .eq('id', id)
-    .select()
-    .single();
+  console.log('Updating tag with ID:', id, 'New name:', name);
   
-  if (error) {
-    console.error('Error updating tag:', error);
+  try {
+    const { data, error } = await supabase
+      .from('tags')
+      .update({ name })
+      .eq('id', id)
+      .select('*')
+      .single();
+    
+    if (error) {
+      console.error('Error updating tag:', error);
+      throw new Error('Не удалось обновить тег');
+    }
+    
+    console.log('Updated tag data:', data);
+    return data;
+  } catch (error) {
+    console.error('Exception in updateTag:', error);
     throw new Error('Не удалось обновить тег');
   }
-  
-  return data;
 };
 
 export const deleteTag = async (id: number): Promise<void> => {
-  // Delete project relations first
-  const { error: relationError } = await supabase
-    .from('project_tags')
-    .delete()
-    .eq('tag_id', id);
+  console.log('Deleting tag with ID:', id);
   
-  if (relationError) {
-    console.error('Error deleting tag relations:', relationError);
-    throw new Error('Не удалось удалить связи тега с проектами');
-  }
-  
-  // Delete the tag
-  const { error } = await supabase
-    .from('tags')
-    .delete()
-    .eq('id', id);
-  
-  if (error) {
-    console.error('Error deleting tag:', error);
+  try {
+    // Delete project relations first
+    const { error: relationError } = await supabase
+      .from('project_tags')
+      .delete()
+      .eq('tag_id', id);
+    
+    if (relationError) {
+      console.error('Error deleting tag relations:', relationError);
+      throw new Error('Не удалось удалить связи тега с проектами');
+    }
+    
+    console.log('Successfully deleted tag relations');
+    
+    // Then delete the tag itself
+    const { error } = await supabase
+      .from('tags')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting tag:', error);
+      throw new Error('Не удалось удалить тег');
+    }
+    
+    console.log('Successfully deleted tag');
+  } catch (error) {
+    console.error('Exception in deleteTag:', error);
     throw new Error('Не удалось удалить тег');
   }
 };
