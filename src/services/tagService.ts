@@ -67,7 +67,7 @@ export const updateTag = async (id: number, name: string): Promise<Tag> => {
       throw new Error('Тег не найден');
     }
     
-    // Update the tag without using .single() initially to avoid the PGRST116 error
+    // Update the tag using .eq() first, then select() to get the updated data
     const { data, error } = await supabase
       .from('tags')
       .update({ name })
@@ -114,6 +114,8 @@ export const deleteTag = async (id: number): Promise<void> => {
     }
     
     // First delete relations to avoid foreign key constraints
+    // Use a more direct approach to delete all relations
+    console.log('Deleting tag relations for tag ID:', id);
     const { error: relationError } = await supabase
       .from('project_tags')
       .delete()
@@ -126,7 +128,8 @@ export const deleteTag = async (id: number): Promise<void> => {
     
     console.log('Successfully deleted tag relations for tag ID:', id);
     
-    // Then delete the tag itself
+    // Improved tag deletion with better error handling
+    console.log('Now deleting the tag itself with ID:', id);
     const { error } = await supabase
       .from('tags')
       .delete()
